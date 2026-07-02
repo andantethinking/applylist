@@ -730,7 +730,7 @@ table.sheet-table tr:first-child td input{
 table.sheet-table tr:first-child td input::placeholder{ color:rgba(255,255,255,0.6); }
 table.sheet-table td input{
   width:100%;
-  min-width:110px;
+  min-width:0;
   border:none;
   background:transparent;
   padding:7px 10px;
@@ -1536,6 +1536,29 @@ function badgeClassFor(val){
   return '';
 }
 
+// 한글은 라틴 문자보다 넓게 표시되므로 가중치를 둬서 열 너비를 추정한다.
+function estimateTextUnits(str){
+  let units = 0;
+  for(const ch of (str || '').toString()){
+    units += /[\u3131-\uD79D\u1100-\u11FF]/.test(ch) ? 1.8 : 1;
+  }
+  return units;
+}
+
+function computeColWidths(grid){
+  const colCount = grid[0] ? grid[0].length : 0;
+  const widths = [];
+  for(let c = 0; c < colCount; c++){
+    let maxUnits = 0;
+    for(let r = 0; r < grid.length; r++){
+      maxUnits = Math.max(maxUnits, estimateTextUnits(grid[r][c]));
+    }
+    const px = Math.round(maxUnits * 8.6 + 34);
+    widths.push(Math.min(340, Math.max(56, px)));
+  }
+  return widths;
+}
+
 function renderPanelTable(){
   if(currentGrid.length === 0){
     sheetPanelBody.innerHTML = `<div class="empty">표시할 데이터가 없습니다.</div>`;
@@ -1571,7 +1594,9 @@ function renderPanelTable(){
     }).join('');
     return `<tr>${cellsHtml}</tr>`;
   }).join('');
-  sheetPanelBody.innerHTML = `<table class="sheet-table">${rowsHtml}</table>`;
+  const colWidths = computeColWidths(currentGrid);
+  const colgroupHtml = '<colgroup>' + colWidths.map(w => `<col style="width:${w}px">`).join('') + '</colgroup>';
+  sheetPanelBody.innerHTML = `<table class="sheet-table">${colgroupHtml}${rowsHtml}</table>`;
 
   if(panelEditable){
     sheetPanelBody.querySelectorAll('input').forEach(input => {
