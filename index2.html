@@ -261,63 +261,6 @@ h1{
 .refresh-btn.spinning svg{ animation:spin .7s linear infinite; }
 @keyframes spin{ to{ transform:rotate(360deg); } }
 
-.admin-btn{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  padding:12px 15px;
-  border:1.5px solid var(--hero-line);
-  border-radius:11px;
-  background:rgba(255,255,255,0.07);
-  color:var(--white-soft);
-  font-family:inherit;
-  font-size:13.5px;
-  font-weight:600;
-  cursor:pointer;
-  transition:border-color .15s ease, color .15s ease, background .15s ease;
-  white-space:nowrap;
-}
-.admin-btn:hover{ border-color:#8EF0D3; color:#fff; background:rgba(255,255,255,0.12); }
-.admin-btn svg{ width:15px; height:15px; stroke:currentColor; }
-.admin-btn.is-on{
-  border-color:#8EF0D3;
-  background:rgba(142,240,211,0.14);
-  color:#fff;
-}
-
-.admin-add-btn{
-  display:none;
-  align-items:center;
-  gap:6px;
-  padding:12px 16px;
-  border:1.5px solid transparent;
-  border-radius:11px;
-  background:linear-gradient(100deg, #4FA3FF, #8EF0D3);
-  color:#0B1230;
-  font-family:inherit;
-  font-size:13.5px;
-  font-weight:800;
-  cursor:pointer;
-  white-space:nowrap;
-  transition:transform .15s ease, box-shadow .15s ease;
-}
-.admin-add-btn.visible{ display:flex; }
-.admin-add-btn:hover{ transform:translateY(-1px); box-shadow:0 8px 18px rgba(79,163,255,0.35); }
-.admin-add-btn svg{ width:15px; height:15px; stroke:#0B1230; }
-
-.admin-status-badge{
-  display:inline-flex;
-  align-items:center;
-  gap:5px;
-  font-size:11.5px;
-  font-weight:800;
-  padding:3px 9px;
-  border-radius:999px;
-  background:#E1F5EC;
-  color:#12946B;
-  margin-left:8px;
-}
-
 /* ---------- BACK BUTTON ---------- */
 .back-btn{
   display:inline-flex;
@@ -416,9 +359,11 @@ h1{
   background:var(--card);
   border:1.5px solid var(--line);
   border-radius:var(--radius);
-  text-decoration:none;
+  text-align:left;
+  font-family:inherit;
   color:inherit;
   overflow:hidden;
+  cursor:pointer;
   transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease;
   animation:cardIn .35s ease backwards;
 }
@@ -516,35 +461,6 @@ h1{
   gap:10px;
 }
 
-.card.admin-card{ padding-top:48px; cursor:default; }
-
-.admin-tools{
-  position:absolute;
-  top:12px;
-  right:12px;
-  display:flex;
-  gap:6px;
-  z-index:2;
-}
-.icon-btn{
-  width:28px;
-  height:28px;
-  padding:0;
-  margin:0;
-  border:none;
-  border-radius:50%;
-  background:var(--paper);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  transition:background .15s ease;
-}
-.icon-btn svg{ width:13px; height:13px; stroke:var(--ink-soft); pointer-events:none; }
-.icon-btn:hover{ background:var(--line); }
-.icon-btn.danger:hover{ background:#FCE8E3; }
-.icon-btn.danger:hover svg{ stroke:#DD5B3F; }
-
 .round-grid{
   display:grid;
   grid-template-columns:repeat(auto-fill, minmax(230px, 1fr));
@@ -624,122 +540,171 @@ h1{
   animation:spin .7s linear infinite;
 }
 
-/* ---------- ADMIN EDIT MODAL ---------- */
-.modal-overlay{
+/* ---------- 시트 뷰어/편집 패널 ---------- */
+.sheet-panel-overlay{
   display:none;
   position:fixed;
   inset:0;
-  z-index:100;
-  background:rgba(10,15,36,0.55);
+  z-index:110;
+  background:rgba(10,15,36,0.6);
   backdrop-filter:blur(2px);
   align-items:center;
   justify-content:center;
-  padding:20px;
+  padding:16px;
 }
-.modal-overlay.visible{ display:flex; }
+.sheet-panel-overlay.visible{ display:flex; }
 
-.modal-box{
-  width:100%;
-  max-width:440px;
+.sheet-panel{
+  width:min(96vw, 1140px);
+  height:min(90vh, 800px);
   background:var(--card);
-  border-radius:16px;
-  padding:26px 24px 22px;
-  box-shadow:0 24px 60px rgba(9,13,33,0.35);
+  border-radius:18px;
+  box-shadow:0 30px 70px rgba(9,13,33,0.4);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
   animation:cardIn .25s ease;
 }
 
-.modal-header{
+.sheet-panel-header{
   display:flex;
-  align-items:center;
+  align-items:flex-start;
   justify-content:space-between;
-  margin-bottom:18px;
+  gap:14px;
+  padding:18px 22px;
+  border-bottom:1px solid var(--line);
+  flex-shrink:0;
 }
-.modal-header h2{
+.sheet-panel-eyebrow{
+  margin:0 0 4px;
+  font-size:11.5px;
+  font-weight:800;
+  letter-spacing:0.04em;
+  color:#2F5FE0;
+}
+.sheet-panel-title{
+  margin:0;
   font-size:17px;
   font-weight:800;
   color:var(--ink);
-  margin:0;
+  line-height:1.35;
 }
-.modal-close{
-  width:26px; height:26px;
+.sheet-panel-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-shrink:0;
+}
+.sheet-panel-status{
+  font-size:12px;
+  font-weight:600;
+  color:var(--ink-soft);
+  white-space:nowrap;
+}
+.sheet-panel-status.dirty{ color:#C2790E; }
+.sheet-panel-status.saved{ color:#12946B; }
+
+.sheet-panel-save{
+  padding:9px 15px;
+  border:none;
+  border-radius:9px;
+  background:#2F5FE0;
+  color:#fff;
+  font-family:inherit;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:opacity .15s ease, transform .15s ease;
+}
+.sheet-panel-save:hover{ transform:translateY(-1px); }
+.sheet-panel-save:disabled{ opacity:0.5; cursor:default; transform:none; }
+
+.sheet-panel-iconbtn{
+  width:32px; height:32px;
   padding:0; margin:0;
   border:none; border-radius:50%;
   background:var(--paper);
   display:flex; align-items:center; justify-content:center;
   cursor:pointer;
+  flex-shrink:0;
+  transition:background .15s ease;
 }
-.modal-close svg{ width:12px; height:12px; stroke:var(--ink-soft); }
-.modal-close:hover{ background:var(--line); }
+.sheet-panel-iconbtn:hover{ background:var(--line); }
+.sheet-panel-iconbtn svg{ width:14px; height:14px; stroke:var(--ink-soft); }
 
-.modal-body{
-  display:flex;
-  flex-direction:column;
-  gap:13px;
-}
-.modal-body label{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  font-size:12.5px;
-  font-weight:700;
-  color:var(--ink-soft);
-}
-.modal-body input{
-  padding:11px 13px;
-  border:1.5px solid var(--line);
-  border-radius:9px;
-  font-size:14px;
-  font-family:inherit;
-  color:var(--ink);
-  background:var(--paper);
-  transition:border-color .15s ease;
-}
-.modal-body input:focus{
-  outline:none;
-  border-color:#2F5FE0;
-  background:#fff;
-}
-
-.modal-error{
-  margin:12px 0 0;
-  font-size:12.5px;
-  font-weight:700;
-  color:#DD5B3F;
-}
-
-.modal-footer{
-  display:flex;
+.sheet-panel-login-banner{
+  display:none;
   align-items:center;
   justify-content:space-between;
-  gap:10px;
-  margin-top:20px;
+  gap:12px;
+  padding:12px 22px;
+  background:#EEF3FF;
+  border-bottom:1px solid var(--line);
+  flex-shrink:0;
+  font-size:13px;
+  font-weight:600;
+  color:#1B3A9E;
 }
-.modal-footer-right{ display:flex; gap:8px; }
-.modal-btn{
-  padding:10px 16px;
-  border-radius:9px;
-  border:1.5px solid transparent;
-  font-family:inherit;
-  font-size:13.5px;
-  font-weight:700;
-  cursor:pointer;
-  transition:opacity .15s ease, transform .15s ease;
-}
-.modal-btn:hover{ transform:translateY(-1px); }
-.modal-btn.ghost{
-  background:var(--paper);
-  border-color:var(--line);
-  color:var(--ink-soft);
-}
-.modal-btn.primary{
+.sheet-panel-login-btn{
+  padding:8px 14px;
+  border:none;
+  border-radius:8px;
   background:#2F5FE0;
   color:#fff;
+  font-family:inherit;
+  font-size:12.5px;
+  font-weight:700;
+  cursor:pointer;
+  white-space:nowrap;
+  flex-shrink:0;
 }
-.modal-btn.danger{
-  background:#FCE8E3;
-  color:#DD5B3F;
+.sheet-panel-login-btn:disabled{ opacity:0.6; cursor:default; }
+
+.sheet-panel-body{
+  flex:1;
+  overflow:auto;
+  padding:0;
 }
-.modal-btn:disabled{ opacity:0.55; cursor:default; transform:none; }
+
+table.sheet-table{
+  border-collapse:collapse;
+  width:max-content;
+  min-width:100%;
+}
+table.sheet-table td{
+  border:1px solid var(--line);
+  padding:0;
+  vertical-align:top;
+}
+table.sheet-table tr:first-child td{
+  background:var(--paper);
+  font-weight:800;
+}
+table.sheet-table td input{
+  width:100%;
+  min-width:110px;
+  border:none;
+  background:transparent;
+  padding:8px 10px;
+  font-size:13px;
+  font-family:inherit;
+  color:var(--ink);
+}
+table.sheet-table td input:focus{
+  outline:2px solid #8EF0D3;
+  outline-offset:-2px;
+  background:#fff;
+  position:relative;
+  z-index:1;
+}
+table.sheet-table td.readonly-cell{
+  padding:8px 10px;
+  font-size:13px;
+  color:var(--ink);
+  white-space:nowrap;
+}
+table.sheet-table tr:first-child td.readonly-cell{ font-weight:800; }
 
 footer{
   margin-top:44px;
@@ -756,6 +721,7 @@ footer a{ color:#2F5FE0; text-decoration:none; }
   .control-bar{ padding:12px 16px; }
   .wrap{ padding:22px 16px 60px; }
   .card-title{ white-space:normal; }
+  .sheet-panel{ width:100vw; height:100vh; border-radius:0; }
 }
 </style>
 </head>
@@ -788,14 +754,6 @@ footer a{ color:#2F5FE0; text-decoration:none; }
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
         새로고침
       </button>
-      <button class="admin-btn" id="adminLoginBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-        관리자 로그인
-      </button>
-      <button class="admin-add-btn" id="adminAddBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-        새 항목 추가
-      </button>
     </div>
 
     <button class="back-btn" id="backBtn" style="display:none;">
@@ -814,42 +772,34 @@ footer a{ color:#2F5FE0; text-decoration:none; }
   </div>
 
   <footer>
-    자료는 <a href="https://docs.google.com/spreadsheets/d/1hg2PVIp408jOFEdNLEPlE8H9ifUqMNJG1ln4WZQ5NUs/edit?usp=sharing" target="_blank" rel="noopener">Google 스프레드시트</a>에서 자동으로 불러옵니다.
+    자료는 <a href="https://docs.google.com/spreadsheets/d/1hg2PVIp408jOFEdNLEPlE8H9ifUqMNJG1ln4WZQ5NUs/edit?usp=sharing" target="_blank" rel="noopener">Google 스프레드시트</a>에서 자동으로 불러옵니다. 카드를 클릭하면 연결된 선발자 명단을 이 페이지 안에서 바로 확인·수정할 수 있습니다.
   </footer>
 </div>
 
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal-box">
-    <div class="modal-header">
-      <h2 id="modalTitle">새 항목 추가</h2>
-      <button class="modal-close" id="modalCloseBtn" type="button" aria-label="닫기">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      </button>
-    </div>
-    <div class="modal-body">
-      <label>차수
-        <input type="text" id="fieldRound" placeholder="예: 7월 1회차">
-      </label>
-      <label>과목
-        <input type="text" id="fieldSubject" placeholder="예: AI 챔피언 블루 3회차">
-      </label>
-      <label>회차
-        <input type="text" id="fieldSession" placeholder="예: 3회차">
-      </label>
-      <label>교육기간
-        <input type="text" id="fieldPeriod" placeholder="예: 2026.07.01 ~ 07.03">
-      </label>
-      <label>링크
-        <input type="text" id="fieldLink" placeholder="https://...">
-      </label>
-    </div>
-    <p class="modal-error" id="modalError" style="display:none;"></p>
-    <div class="modal-footer">
-      <button class="modal-btn danger" id="modalDeleteBtn" type="button" style="display:none;">삭제</button>
-      <div class="modal-footer-right">
-        <button class="modal-btn ghost" id="modalCancelBtn" type="button">취소</button>
-        <button class="modal-btn primary" id="modalSaveBtn" type="button">저장</button>
+<div class="sheet-panel-overlay" id="sheetPanelOverlay">
+  <div class="sheet-panel">
+    <div class="sheet-panel-header">
+      <div>
+        <p class="sheet-panel-eyebrow" id="sheetPanelEyebrow">차수</p>
+        <h2 class="sheet-panel-title" id="sheetPanelTitle">과목명</h2>
       </div>
+      <div class="sheet-panel-actions">
+        <span class="sheet-panel-status" id="sheetPanelStatus"></span>
+        <button class="sheet-panel-save" id="sheetPanelSaveBtn" style="display:none;">저장</button>
+        <a class="sheet-panel-iconbtn" id="sheetPanelOpenLink" href="#" target="_blank" rel="noopener" aria-label="새 창에서 열기">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg>
+        </a>
+        <button class="sheet-panel-iconbtn" id="sheetPanelCloseBtn" type="button" aria-label="닫기">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="sheet-panel-login-banner" id="sheetPanelLoginBanner">
+      <span>Google 계정으로 로그인하면 이 표를 페이지 안에서 바로 수정할 수 있어요. (편집 권한이 있는 계정이어야 합니다)</span>
+      <button class="sheet-panel-login-btn" id="sheetPanelLoginBtn" type="button">Google 로그인</button>
+    </div>
+    <div class="sheet-panel-body" id="sheetPanelBody">
+      <div class="loading"><div class="spinner"></div>불러오는 중...</div>
     </div>
   </div>
 </div>
@@ -864,9 +814,6 @@ const SHEETS_SCOPE = 'https://www.googleapis.com/auth/spreadsheets';
 let accessToken = null;
 let isAdmin = false;
 let tokenClient = null;
-let activeSheetName = null;
-let activeSheetId = null;
-let headerMap = null; // { roundIdx, subjectIdx, sessionIdx, periodIdx, linkIdx, colCount }
 
 // 차수별 색상 팔레트 (등장 순서대로 순환 배정)
 const PALETTE = [
@@ -878,7 +825,7 @@ const PALETTE = [
   { solid: '#0E8E8E', tint: '#DFF4F4' },
 ];
 
-let allRows = [];   // [{round, subject, link}]
+let allRows = [];   // [{round, subject, session, period, link}]
 let rounds = [];    // 차수 목록 (등장 순서)
 let roundColor = {}; // round -> {solid, tint}
 let activeTab = 'ALL';
@@ -894,24 +841,6 @@ const searchInput = document.getElementById('searchInput');
 const searchClear = document.getElementById('searchClear');
 const searchHint = document.getElementById('searchHint');
 const refreshBtn = document.getElementById('refreshBtn');
-const adminLoginBtn = document.getElementById('adminLoginBtn');
-const adminAddBtn = document.getElementById('adminAddBtn');
-
-const modalOverlay = document.getElementById('modalOverlay');
-const modalTitle = document.getElementById('modalTitle');
-const modalCloseBtn = document.getElementById('modalCloseBtn');
-const modalCancelBtn = document.getElementById('modalCancelBtn');
-const modalSaveBtn = document.getElementById('modalSaveBtn');
-const modalDeleteBtn = document.getElementById('modalDeleteBtn');
-const modalError = document.getElementById('modalError');
-const fieldRound = document.getElementById('fieldRound');
-const fieldSubject = document.getElementById('fieldSubject');
-const fieldSession = document.getElementById('fieldSession');
-const fieldPeriod = document.getElementById('fieldPeriod');
-const fieldLink = document.getElementById('fieldLink');
-
-let modalMode = 'add'; // 'add' | 'edit'
-let modalEditingRow = null; // 편집 중인 행 번호(시트 실제 행)
 
 backBtn.addEventListener('click', () => {
   currentView = 'rounds';
@@ -927,325 +856,16 @@ titleHeading.addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-/* ---------- Google 로그인 (관리자 편집 모드) ---------- */
-
-function ensureTokenClient(){
-  if(tokenClient) return tokenClient;
-  if(!window.google || !google.accounts || !google.accounts.oauth2){
-    throw new Error('Google 로그인 스크립트를 아직 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
-  }
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID,
-    scope: SHEETS_SCOPE,
-    callback: async (tokenResponse) => {
-      if(tokenResponse && tokenResponse.access_token){
-        accessToken = tokenResponse.access_token;
-        adminLoginBtn.disabled = true;
-        try{
-          await loadSheetMeta();
-          await loadHeaderMap();
-          isAdmin = true;
-          updateAdminUI();
-          await loadAdminData();
-        }catch(err){
-          console.error('관리자 모드 진입 실패:', err);
-          alert('로그인은 되었지만 시트 정보를 불러오지 못했습니다.\n' + (err.message || err));
-          accessToken = null;
-        }finally{
-          adminLoginBtn.disabled = false;
-        }
-      }
-    },
-  });
-  return tokenClient;
-}
-
-function updateAdminUI(){
-  adminLoginBtn.classList.toggle('is-on', isAdmin);
-  adminLoginBtn.innerHTML = isAdmin
-    ? `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8L22 12L18 16"/><path d="M2 12H22"/></svg>로그아웃`
-    : `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>관리자 로그인`;
-  adminAddBtn.classList.toggle('visible', isAdmin);
-}
-
-adminLoginBtn.addEventListener('click', () => {
-  if(isAdmin){
-    if(accessToken && window.google && google.accounts && google.accounts.oauth2){
-      google.accounts.oauth2.revoke(accessToken, () => {});
-    }
-    accessToken = null;
-    isAdmin = false;
-    activeSheetName = null;
-    activeSheetId = null;
-    headerMap = null;
-    updateAdminUI();
-    load(false);
-    return;
-  }
-  try{
-    ensureTokenClient().requestAccessToken({ prompt: '' });
-  }catch(err){
-    alert(err.message || String(err));
-  }
-});
-
-/* ---------- Google Sheets API 헬퍼 ---------- */
-
-async function sheetsApi(path, options){
-  options = options || {};
-  const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}${path}`, {
-    ...options,
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-      ...(options.headers || {}),
-    },
-  });
-  let data = null;
-  try{ data = await res.json(); }catch(e){ /* 응답 본문 없음 */ }
-  if(!res.ok){
-    const msg = (data && data.error && data.error.message) || `요청 실패 (${res.status})`;
-    throw new Error(msg);
-  }
-  return data;
-}
-
-async function loadSheetMeta(){
-  const data = await sheetsApi('?fields=sheets.properties');
-  const first = data.sheets && data.sheets[0] && data.sheets[0].properties;
-  if(!first) throw new Error('시트 정보를 찾을 수 없습니다.');
-  activeSheetName = first.title;
-  activeSheetId = first.sheetId;
-}
-
-async function loadHeaderMap(){
-  const range = encodeURIComponent(`${activeSheetName}!1:1`);
-  const data = await sheetsApi(`/values/${range}`);
-  const header = (data.values && data.values[0]) || [];
-  const idx = (name) => header.findIndex(h => (h || '').toString().trim() === name);
-  let roundIdx = idx('차수'), subjectIdx = idx('과목'), sessionIdx = idx('회차'), periodIdx = idx('교육기간'), linkIdx = idx('링크');
-  if(roundIdx === -1 || subjectIdx === -1 || linkIdx === -1){
-    roundIdx = 0; subjectIdx = 1; sessionIdx = 2; periodIdx = 3; linkIdx = 4;
-  }
-  headerMap = { roundIdx, subjectIdx, sessionIdx, periodIdx, linkIdx, colCount: Math.max(header.length, linkIdx + 1, 5) };
-}
-
-async function loadRowsViaApi(){
-  const range = encodeURIComponent(`${activeSheetName}!A:${colLetter(Math.max(headerMap.colCount - 1, 4))}`);
-  const data = await sheetsApi(`/values/${range}`);
-  const values = data.values || [];
-  const rows = [];
-  for(let i = 1; i < values.length; i++){
-    const raw = values[i] || [];
-    const get = (idx) => (idx > -1 && raw[idx] != null) ? String(raw[idx]).trim() : '';
-    const round = get(headerMap.roundIdx);
-    const subject = get(headerMap.subjectIdx);
-    const session = get(headerMap.sessionIdx);
-    const period = get(headerMap.periodIdx);
-    let link = get(headerMap.linkIdx);
-    if(!round || !subject || !link) continue;
-    if(!/^https?:\/\//i.test(link)) link = 'https://' + link;
-    const padded = raw.slice();
-    while(padded.length < headerMap.colCount) padded.push('');
-    rows.push({ round, subject, session, period, link, rowNumber: i + 1, raw: padded });
-  }
-  return rows;
-}
-
-function colLetter(idx){
-  let s = '';
-  idx = idx + 1;
-  while(idx > 0){
-    const rem = (idx - 1) % 26;
-    s = String.fromCharCode(65 + rem) + s;
-    idx = Math.floor((idx - 1) / 26);
-  }
-  return s;
-}
-
-async function loadAdminData(isManual){
-  if(isManual) refreshBtn.classList.add('spinning');
-  try{
-    const rows = await loadRowsViaApi();
-    allRows = rows;
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-    setStatus(true, `마지막 업데이트: ${timeStr} · 총 ${allRows.length}개 과목`, true);
-    render();
-  }catch(err){
-    console.error('관리자 데이터 로드 실패:', err);
-    setStatus(false, '데이터를 불러오지 못했습니다.');
-    contentEl.innerHTML = `<div class="error-box">
-      관리자 권한으로 시트를 불러오지 못했습니다.<br>
-      이 구글 계정에 스프레드시트 편집 권한이 있는지 확인해주세요.<br>
-      <span style="display:block;margin-top:10px;font-size:11.5px;color:var(--ink-soft);">상세 오류: ${escapeHtml(err.message || String(err))}</span>
-    </div>`;
-  }finally{
-    if(isManual) setTimeout(() => refreshBtn.classList.remove('spinning'), 400);
-  }
-}
-
-async function saveRowToSheet(rowData, existingRow){
-  const arr = existingRow ? existingRow.raw.slice() : new Array(headerMap.colCount).fill('');
-  arr[headerMap.roundIdx] = rowData.round;
-  arr[headerMap.subjectIdx] = rowData.subject;
-  if(headerMap.sessionIdx > -1) arr[headerMap.sessionIdx] = rowData.session;
-  if(headerMap.periodIdx > -1) arr[headerMap.periodIdx] = rowData.period;
-  arr[headerMap.linkIdx] = rowData.link;
-
-  if(existingRow){
-    const range = encodeURIComponent(`${activeSheetName}!A${existingRow.rowNumber}:${colLetter(headerMap.colCount - 1)}${existingRow.rowNumber}`);
-    await sheetsApi(`/values/${range}?valueInputOption=USER_ENTERED`, {
-      method: 'PUT',
-      body: JSON.stringify({ values: [arr] }),
-    });
-  } else {
-    const range = encodeURIComponent(`${activeSheetName}!A:${colLetter(headerMap.colCount - 1)}`);
-    await sheetsApi(`/values/${range}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`, {
-      method: 'POST',
-      body: JSON.stringify({ values: [arr] }),
-    });
-  }
-}
-
-async function deleteRowFromSheet(rowNumber){
-  await sheetsApi(':batchUpdate', {
-    method: 'POST',
-    body: JSON.stringify({
-      requests: [{
-        deleteDimension: {
-          range: { sheetId: activeSheetId, dimension: 'ROWS', startIndex: rowNumber - 1, endIndex: rowNumber },
-        },
-      }],
-    }),
-  });
-}
-
-/* ---------- 추가/수정 모달 ---------- */
-
-function openAddModal(){
-  modalMode = 'add';
-  modalEditingRow = null;
-  modalTitle.textContent = '새 항목 추가';
-  modalDeleteBtn.style.display = 'none';
-  fieldRound.value = activeTab !== 'ALL' ? activeTab : '';
-  fieldSubject.value = '';
-  fieldSession.value = '';
-  fieldPeriod.value = '';
-  fieldLink.value = '';
-  modalError.style.display = 'none';
-  modalOverlay.classList.add('visible');
-  fieldRound.focus();
-}
-
-function openEditModal(rowNumber){
-  const row = allRows.find(r => r.rowNumber === rowNumber);
-  if(!row) return;
-  modalMode = 'edit';
-  modalEditingRow = row;
-  modalTitle.textContent = '항목 수정';
-  modalDeleteBtn.style.display = 'inline-flex';
-  fieldRound.value = row.round;
-  fieldSubject.value = row.subject;
-  fieldSession.value = row.session;
-  fieldPeriod.value = row.period;
-  fieldLink.value = row.link;
-  modalError.style.display = 'none';
-  modalOverlay.classList.add('visible');
-  fieldRound.focus();
-}
-
-function closeModal(){
-  modalOverlay.classList.remove('visible');
-  modalEditingRow = null;
-}
-
-function showModalError(msg){
-  modalError.textContent = msg;
-  modalError.style.display = 'block';
-}
-
-modalCloseBtn.addEventListener('click', closeModal);
-modalCancelBtn.addEventListener('click', closeModal);
-modalOverlay.addEventListener('click', (e) => { if(e.target === modalOverlay) closeModal(); });
-
-modalSaveBtn.addEventListener('click', async () => {
-  const rowData = {
-    round: fieldRound.value.trim(),
-    subject: fieldSubject.value.trim(),
-    session: fieldSession.value.trim(),
-    period: fieldPeriod.value.trim(),
-    link: fieldLink.value.trim(),
-  };
-  if(!rowData.round || !rowData.subject || !rowData.link){
-    showModalError('차수, 과목, 링크는 필수 입력입니다.');
-    return;
-  }
-  if(!/^https?:\/\//i.test(rowData.link)) rowData.link = 'https://' + rowData.link;
-
-  modalSaveBtn.disabled = true;
-  modalSaveBtn.textContent = '저장 중...';
-  try{
-    await saveRowToSheet(rowData, modalMode === 'edit' ? modalEditingRow : null);
-    closeModal();
-    await loadAdminData();
-  }catch(err){
-    console.error('저장 실패:', err);
-    showModalError('저장에 실패했습니다: ' + (err.message || err));
-  }finally{
-    modalSaveBtn.disabled = false;
-    modalSaveBtn.textContent = '저장';
-  }
-});
-
-modalDeleteBtn.addEventListener('click', async () => {
-  if(!modalEditingRow) return;
-  if(!confirm(`"${modalEditingRow.subject}" 항목을 삭제할까요? 되돌릴 수 없습니다.`)) return;
-  modalDeleteBtn.disabled = true;
-  modalDeleteBtn.textContent = '삭제 중...';
-  try{
-    await deleteRowFromSheet(modalEditingRow.rowNumber);
-    closeModal();
-    await loadAdminData();
-  }catch(err){
-    console.error('삭제 실패:', err);
-    showModalError('삭제에 실패했습니다: ' + (err.message || err));
-  }finally{
-    modalDeleteBtn.disabled = false;
-    modalDeleteBtn.textContent = '삭제';
-  }
-});
-
-adminAddBtn.addEventListener('click', openAddModal);
-
-// 카드에 있는 수정/삭제 아이콘 클릭 처리 (이벤트 위임)
-contentEl.addEventListener('click', (e) => {
-  const editBtn = e.target.closest('[data-action="edit"]');
-  const delBtn = e.target.closest('[data-action="delete"]');
-  if(editBtn){
-    e.preventDefault();
-    openEditModal(Number(editBtn.getAttribute('data-row')));
-  } else if(delBtn){
-    e.preventDefault();
-    const rowNumber = Number(delBtn.getAttribute('data-row'));
-    const row = allRows.find(r => r.rowNumber === rowNumber);
-    if(!row) return;
-    if(!confirm(`"${row.subject}" 항목을 삭제할까요? 되돌릴 수 없습니다.`)) return;
-    deleteRowFromSheet(rowNumber).then(() => loadAdminData()).catch(err => {
-      console.error('삭제 실패:', err);
-      alert('삭제에 실패했습니다: ' + (err.message || err));
-    });
-  }
-});
+/* ================= 시트 목록 읽기 (공개 gviz, 로그인 불필요) ================= */
 
 function naturalKeyForRound(r){
   const m = String(r).match(/-?\d+(\.\d+)?/);
   return m ? parseFloat(m[0]) : Number.POSITIVE_INFINITY;
 }
 
-function fetchSheet(){
+function fetchArbitrarySheet(sheetId, gid){
   return new Promise((resolve, reject) => {
-    const callbackName = 'gsheetCb_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
+    const callbackName = 'gvizCb_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
     const script = document.createElement('script');
 
     const timeoutId = setTimeout(() => {
@@ -1275,9 +895,14 @@ function fetchSheet(){
       reject(new Error('스크립트 로드에 실패했습니다. 시트 ID 또는 네트워크 연결을 확인해주세요.'));
     };
 
-    script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?headers=1&tqx=out:json;responseHandler:${callbackName}&t=${Date.now()}`;
+    const gidParam = gid ? `&gid=${encodeURIComponent(gid)}` : '';
+    script.src = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?headers=1&tqx=out:json;responseHandler:${callbackName}${gidParam}&t=${Date.now()}`;
     document.body.appendChild(script);
   });
+}
+
+function fetchSheet(){
+  return fetchArbitrarySheet(SHEET_ID, null);
 }
 
 function findColIndex(cols, names){
@@ -1390,7 +1015,8 @@ function render(){
   contentEl.innerHTML = `<div class="grid">` + rowsToShow.map((r, i) => {
     const c = roundColor[r.round] || PALETTE[0];
     const styleAttr = `--accent:${c.solid};--accent-tint:${c.tint};animation-delay:${Math.min(i * 30, 240)}ms`;
-    const innerHtml = `
+    return `
+    <button type="button" class="card" style="${styleAttr}" data-idx="${i}">
       <div class="card-body">
         <span class="card-title">${escapeHtml(r.subject)}</span>
         ${(r.session || r.period) ? `<div class="card-meta">
@@ -1400,26 +1026,20 @@ function render(){
       </div>
       <div class="card-bottom">
         ${showBadge ? `<span class="badge">${escapeHtml(r.round)}</span>` : `<span></span>`}
-        ${isAdmin
-          ? `<a class="go-arrow" href="${escapeAttr(r.link)}" target="_blank" rel="noopener" aria-label="링크 열기"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg></a>`
-          : `<span class="go-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg></span>`}
+        <span class="go-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>
+        </span>
       </div>
-    `;
-
-    if(isAdmin){
-      const adminTools = `
-      <div class="admin-tools">
-        <button class="icon-btn" type="button" data-action="edit" data-row="${r.rowNumber}" aria-label="수정">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-        </button>
-        <button class="icon-btn danger" type="button" data-action="delete" data-row="${r.rowNumber}" aria-label="삭제">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-        </button>
-      </div>`;
-      return `<div class="card admin-card" style="${styleAttr}">${adminTools}${innerHtml}</div>`;
-    }
-    return `<a class="card" style="${styleAttr}" href="${escapeAttr(r.link)}" target="_blank" rel="noopener">${innerHtml}</a>`;
+    </button>
+  `;
   }).join('') + `</div>`;
+
+  contentEl.querySelectorAll('.card').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const row = rowsToShow[Number(btn.getAttribute('data-idx'))];
+      if(row) openSheetPanel(row);
+    });
+  });
 }
 
 function renderRoundsLanding(){
@@ -1460,11 +1080,8 @@ function escapeHtml(str){
 }
 function escapeAttr(str){ return escapeHtml(str); }
 
-function setStatus(ok, message, showAdminBadge){
-  const badge = showAdminBadge
-    ? `<span class="admin-status-badge"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>관리자 모드</span>`
-    : '';
-  statusEl.innerHTML = `<span class="status-dot ${ok ? '' : 'error'}"></span>${message}${badge}`;
+function setStatus(ok, message){
+  statusEl.innerHTML = `<span class="status-dot ${ok ? '' : 'error'}"></span>${message}`;
 }
 
 async function load(isManual){
@@ -1496,11 +1113,283 @@ searchClear.addEventListener('click', () => {
   searchInput.focus();
   render();
 });
-refreshBtn.addEventListener('click', () => isAdmin ? loadAdminData(true) : load(true));
+refreshBtn.addEventListener('click', () => load(true));
+
+/* ================= Google 로그인 (선발자 명단 편집용) ================= */
+
+function ensureTokenClient(){
+  if(tokenClient) return tokenClient;
+  if(!window.google || !google.accounts || !google.accounts.oauth2){
+    throw new Error('Google 로그인 스크립트를 아직 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+  }
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SHEETS_SCOPE,
+    callback: (tokenResponse) => {
+      if(tokenResponse && tokenResponse.access_token){
+        accessToken = tokenResponse.access_token;
+        isAdmin = true;
+        // 현재 열려있는 패널이 있으면 바로 편집 모드로 전환
+        if(sheetPanelOverlay.classList.contains('visible') && currentPanelRow){
+          loadPanelEditable();
+        }
+      }
+    },
+  });
+  return tokenClient;
+}
+
+/* ================= Google Sheets API 헬퍼 (임의의 시트 대상) ================= */
+
+async function sheetsApiGeneric(sheetId, path, options){
+  options = options || {};
+  const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}${path}`, {
+    ...options,
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+      ...(options.headers || {}),
+    },
+  });
+  let data = null;
+  try{ data = await res.json(); }catch(e){ /* 응답 본문 없음 */ }
+  if(!res.ok){
+    const msg = (data && data.error && data.error.message) || `요청 실패 (${res.status})`;
+    throw new Error(msg);
+  }
+  return data;
+}
+
+function colLetter(idx){
+  let s = '';
+  idx = idx + 1;
+  while(idx > 0){
+    const rem = (idx - 1) % 26;
+    s = String.fromCharCode(65 + rem) + s;
+    idx = Math.floor((idx - 1) / 26);
+  }
+  return s;
+}
+
+function parseSheetUrl(url){
+  const idMatch = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  const gidMatch = url.match(/[?#&]gid=(\d+)/);
+  return {
+    id: idMatch ? idMatch[1] : null,
+    gid: gidMatch ? gidMatch[1] : null,
+  };
+}
+
+/* ================= 시트 뷰어 / 편집 패널 ================= */
+
+const sheetPanelOverlay = document.getElementById('sheetPanelOverlay');
+const sheetPanelEyebrow = document.getElementById('sheetPanelEyebrow');
+const sheetPanelTitle = document.getElementById('sheetPanelTitle');
+const sheetPanelBody = document.getElementById('sheetPanelBody');
+const sheetPanelStatus = document.getElementById('sheetPanelStatus');
+const sheetPanelSaveBtn = document.getElementById('sheetPanelSaveBtn');
+const sheetPanelOpenLink = document.getElementById('sheetPanelOpenLink');
+const sheetPanelCloseBtn = document.getElementById('sheetPanelCloseBtn');
+const sheetPanelLoginBanner = document.getElementById('sheetPanelLoginBanner');
+const sheetPanelLoginBtn = document.getElementById('sheetPanelLoginBtn');
+
+let currentPanelRow = null;
+let currentPanelSheetId = null;
+let currentPanelGid = null;
+let currentPanelSheetName = null;
+let currentGrid = [];
+let panelDirty = false;
+let panelEditable = false;
+
+async function openSheetPanel(row){
+  const parsed = parseSheetUrl(row.link);
+  if(!parsed.id){
+    window.open(row.link, '_blank', 'noopener');
+    return;
+  }
+  currentPanelRow = row;
+  currentPanelSheetId = parsed.id;
+  currentPanelGid = parsed.gid;
+  currentPanelSheetName = null;
+  currentGrid = [];
+  panelDirty = false;
+  panelEditable = false;
+
+  sheetPanelEyebrow.textContent = row.round;
+  sheetPanelTitle.textContent = row.subject;
+  sheetPanelOpenLink.href = row.link;
+  sheetPanelStatus.textContent = '';
+  sheetPanelStatus.className = 'sheet-panel-status';
+  sheetPanelSaveBtn.style.display = 'none';
+  sheetPanelLoginBanner.style.display = 'none';
+  sheetPanelBody.innerHTML = `<div class="loading"><div class="spinner"></div>불러오는 중...</div>`;
+
+  sheetPanelOverlay.classList.add('visible');
+  document.body.style.overflow = 'hidden';
+
+  if(isAdmin && accessToken){
+    await loadPanelEditable();
+  } else {
+    sheetPanelLoginBanner.style.display = 'flex';
+    await loadPanelReadonly();
+  }
+}
+
+function closeSheetPanel(){
+  if(panelEditable && panelDirty){
+    if(!confirm('저장하지 않은 변경사항이 있습니다. 닫을까요?')) return;
+  }
+  sheetPanelOverlay.classList.remove('visible');
+  document.body.style.overflow = '';
+  currentPanelRow = null;
+}
+
+sheetPanelCloseBtn.addEventListener('click', closeSheetPanel);
+sheetPanelOverlay.addEventListener('click', (e) => { if(e.target === sheetPanelOverlay) closeSheetPanel(); });
+sheetPanelLoginBtn.addEventListener('click', () => {
+  sheetPanelLoginBtn.disabled = true;
+  sheetPanelLoginBtn.textContent = '로그인 중...';
+  try{
+    ensureTokenClient().requestAccessToken({ prompt: '' });
+  }catch(err){
+    alert(err.message || String(err));
+  }
+  setTimeout(() => { sheetPanelLoginBtn.disabled = false; sheetPanelLoginBtn.textContent = 'Google 로그인'; }, 2500);
+});
+
+async function loadPanelReadonly(){
+  try{
+    const table = await fetchArbitrarySheet(currentPanelSheetId, currentPanelGid);
+    const cols = table.cols || [];
+    const header = cols.map(c => (c.label || '').toString());
+    const grid = [header];
+    (table.rows || []).forEach(row => {
+      const cells = row.c || [];
+      grid.push(cells.map(cell => (cell && cell.f != null) ? String(cell.f) : (cell && cell.v != null ? String(cell.v) : '')));
+    });
+    normalizeGrid(grid);
+    currentGrid = grid;
+    panelEditable = false;
+    renderPanelTable();
+  }catch(err){
+    console.error('시트 미리보기 실패:', err);
+    sheetPanelBody.innerHTML = `<div class="error-box">
+      이 시트를 불러오지 못했습니다. 비공개 시트이거나 접근 권한이 없을 수 있어요.<br>
+      <span style="display:block;margin-top:8px;font-size:11.5px;">상세 오류: ${escapeHtml(err.message || String(err))}</span>
+    </div>`;
+  }
+}
+
+async function loadPanelEditable(){
+  sheetPanelBody.innerHTML = `<div class="loading"><div class="spinner"></div>불러오는 중...</div>`;
+  sheetPanelLoginBanner.style.display = 'none';
+  try{
+    const meta = await sheetsApiGeneric(currentPanelSheetId, '?fields=sheets.properties');
+    let props = meta.sheets && meta.sheets[0] && meta.sheets[0].properties;
+    if(currentPanelGid){
+      const found = (meta.sheets || []).find(s => String(s.properties.sheetId) === String(currentPanelGid));
+      if(found) props = found.properties;
+    }
+    if(!props) throw new Error('시트 정보를 찾을 수 없습니다.');
+    currentPanelSheetName = props.title;
+
+    const grid = props.gridProperties || {};
+    const maxRows = Math.min(grid.rowCount || 200, 300);
+    const maxCols = Math.min(grid.columnCount || 20, 26);
+    const range = encodeURIComponent(`${currentPanelSheetName}!A1:${colLetter(maxCols - 1)}${maxRows}`);
+    const data = await sheetsApiGeneric(currentPanelSheetId, `/values/${range}`);
+    const values = data.values || [['']];
+    normalizeGrid(values);
+    currentGrid = values;
+    panelEditable = true;
+    panelDirty = false;
+    sheetPanelLoginBanner.style.display = 'none';
+    sheetPanelSaveBtn.style.display = 'inline-flex';
+    renderPanelTable();
+  }catch(err){
+    console.error('편집용 시트 로드 실패:', err);
+    sheetPanelBody.innerHTML = `<div class="error-box">
+      이 계정으로는 이 시트를 편집할 수 없습니다. 편집자 권한이 있는지 확인해주세요.<br>
+      <span style="display:block;margin-top:8px;font-size:11.5px;">상세 오류: ${escapeHtml(err.message || String(err))}</span>
+    </div>`;
+  }
+}
+
+function normalizeGrid(grid){
+  // 완전히 빈 마지막 행들 제거
+  while(grid.length > 1 && grid[grid.length - 1].every(c => (c || '').toString().trim() === '')){
+    grid.pop();
+  }
+  const maxCols = Math.max(1, ...grid.map(r => r.length));
+  for(let i = 0; i < grid.length; i++){
+    while(grid[i].length < maxCols) grid[i].push('');
+  }
+}
+
+function renderPanelTable(){
+  if(currentGrid.length === 0){
+    sheetPanelBody.innerHTML = `<div class="empty">표시할 데이터가 없습니다.</div>`;
+    return;
+  }
+  const rowsHtml = currentGrid.map((row, r) => {
+    const cellsHtml = row.map((val, c) => {
+      if(panelEditable){
+        return `<td><input type="text" value="${escapeAttr(val)}" data-r="${r}" data-c="${c}"></td>`;
+      }
+      return `<td class="readonly-cell">${escapeHtml(val)}</td>`;
+    }).join('');
+    return `<tr>${cellsHtml}</tr>`;
+  }).join('');
+  sheetPanelBody.innerHTML = `<table class="sheet-table">${rowsHtml}</table>`;
+
+  if(panelEditable){
+    sheetPanelBody.querySelectorAll('input').forEach(input => {
+      input.addEventListener('input', () => {
+        const r = Number(input.getAttribute('data-r'));
+        const c = Number(input.getAttribute('data-c'));
+        currentGrid[r][c] = input.value;
+        markPanelDirty();
+      });
+    });
+  }
+}
+
+function markPanelDirty(){
+  panelDirty = true;
+  sheetPanelStatus.textContent = '저장되지 않은 변경사항';
+  sheetPanelStatus.className = 'sheet-panel-status dirty';
+}
+
+sheetPanelSaveBtn.addEventListener('click', async () => {
+  if(!panelEditable || !currentPanelSheetName) return;
+  sheetPanelSaveBtn.disabled = true;
+  sheetPanelSaveBtn.textContent = '저장 중...';
+  try{
+    const rows = currentGrid.length;
+    const cols = currentGrid[0] ? currentGrid[0].length : 1;
+    const range = encodeURIComponent(`${currentPanelSheetName}!A1:${colLetter(cols - 1)}${rows}`);
+    await sheetsApiGeneric(currentPanelSheetId, `/values/${range}?valueInputOption=USER_ENTERED`, {
+      method: 'PUT',
+      body: JSON.stringify({ values: currentGrid }),
+    });
+    panelDirty = false;
+    const timeStr = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+    sheetPanelStatus.textContent = `저장됨 · ${timeStr}`;
+    sheetPanelStatus.className = 'sheet-panel-status saved';
+  }catch(err){
+    console.error('저장 실패:', err);
+    alert('저장에 실패했습니다: ' + (err.message || err));
+  }finally{
+    sheetPanelSaveBtn.disabled = false;
+    sheetPanelSaveBtn.textContent = '저장';
+  }
+});
+
+/* ================= 키보드 단축키 ================= */
 
 document.addEventListener('keydown', (e) => {
-  if(modalOverlay.classList.contains('visible')){
-    if(e.key === 'Escape') closeModal();
+  if(sheetPanelOverlay.classList.contains('visible')){
+    if(e.key === 'Escape') closeSheetPanel();
     return;
   }
   const tag = document.activeElement && document.activeElement.tagName;
@@ -1518,7 +1407,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 load(false);
-setInterval(() => { isAdmin ? loadAdminData(false) : load(false); }, AUTO_REFRESH_MS);
+setInterval(() => load(false), AUTO_REFRESH_MS);
 </script>
 
 </body>
