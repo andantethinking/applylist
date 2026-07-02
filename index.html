@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>과목 자료 모음</title>
+<title>차수/과목별 선발자 명단</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <style>
 @font-face {
@@ -13,19 +13,24 @@
 }
 
 :root{
-  --blue-900:#12275B;
-  --blue-700:#1D4ED8;
-  --blue-500:#3B6EF0;
-  --blue-100:#E8EEFC;
-  --emerald:#0F9D74;
-  --amber:#D98F1E;
-  --coral:#E0654F;
-  --ink:#16203D;
-  --ink-soft:#5B6787;
-  --paper:#F6F8FC;
+  --ink:#0E1530;
+  --ink-soft:#6B7590;
+  --paper:#F3F5FA;
   --card:#FFFFFF;
-  --line:#E2E7F3;
+  --line:#E3E7F1;
+  --hero-1:#0B1230;
+  --hero-2:#1B2557;
+  --hero-line:rgba(255,255,255,0.12);
+  --white-soft:rgba(255,255,255,0.72);
   --radius:14px;
+
+  /* 차수별 색상 팔레트 (등장 순서대로 순환 배정) */
+  --c0-solid:#2F5FE0; --c0-tint:#E9EEFD;
+  --c1-solid:#12946B; --c1-tint:#E1F5EC;
+  --c2-solid:#C2790E; --c2-tint:#FBF0DD;
+  --c3-solid:#DD5B3F; --c3-tint:#FCE8E3;
+  --c4-solid:#7B42E0; --c4-tint:#F0E9FE;
+  --c5-solid:#0E8E8E; --c5-tint:#DFF4F4;
 }
 
 *{box-sizing:border-box;}
@@ -38,31 +43,64 @@ body{
   -webkit-font-smoothing:antialiased;
 }
 
-.wrap{
-  max-width:960px;
+/* ---------- HERO ---------- */
+.hero{
+  position:relative;
+  background:linear-gradient(155deg, var(--hero-1) 0%, var(--hero-2) 65%, #24306B 100%);
+  overflow:hidden;
+  padding:52px 24px 30px;
+}
+.hero::before{
+  content:'';
+  position:absolute;
+  top:-120px; right:-100px;
+  width:420px; height:420px;
+  background:radial-gradient(circle, rgba(47,95,224,0.55) 0%, rgba(47,95,224,0) 70%);
+  pointer-events:none;
+}
+.hero::after{
+  content:'';
+  position:absolute;
+  bottom:-160px; left:-80px;
+  width:360px; height:360px;
+  background:radial-gradient(circle, rgba(18,148,107,0.4) 0%, rgba(18,148,107,0) 70%);
+  pointer-events:none;
+}
+.hero-inner{
+  position:relative;
+  max-width:1040px;
   margin:0 auto;
-  padding:48px 24px 80px;
 }
 
-header.hero{
-  margin-bottom:36px;
+.eyebrow-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:14px;
 }
-
 .eyebrow{
-  font-size:13px;
-  font-weight:600;
-  letter-spacing:0.08em;
-  color:var(--blue-700);
+  font-size:12.5px;
+  font-weight:700;
+  letter-spacing:0.12em;
+  color:var(--white-soft);
   text-transform:uppercase;
-  margin:0 0 10px;
+  margin:0;
+}
+.dot-legend{
+  display:flex;
+  gap:5px;
+}
+.dot-legend span{
+  width:6px; height:6px; border-radius:50%;
+  display:inline-block;
 }
 
 h1{
-  font-size:clamp(28px,4.2vw,40px);
+  font-size:clamp(30px,4.6vw,44px);
   font-weight:800;
   letter-spacing:-0.02em;
-  margin:0 0 10px;
-  background:linear-gradient(100deg, var(--blue-900) 15%, var(--blue-500) 55%, var(--emerald) 100%);
+  margin:0 0 12px;
+  background:linear-gradient(100deg, #FFFFFF 20%, #B9C6FF 60%, #8EF0D3 100%);
   -webkit-background-clip:text;
   background-clip:text;
   color:transparent;
@@ -71,16 +109,17 @@ h1{
 
 .sub{
   font-size:15px;
-  color:var(--ink-soft);
-  margin:0;
+  color:var(--white-soft);
+  margin:0 0 30px;
   line-height:1.6;
+  max-width:520px;
 }
 
 .toolbar{
   display:flex;
   gap:10px;
   align-items:center;
-  margin:28px 0 20px;
+  margin-bottom:22px;
   flex-wrap:wrap;
 }
 
@@ -92,19 +131,20 @@ h1{
 
 .search-box input{
   width:100%;
-  padding:12px 16px 12px 40px;
-  border:1.5px solid var(--line);
-  border-radius:10px;
+  padding:13px 16px 13px 40px;
+  border:1.5px solid var(--hero-line);
+  border-radius:11px;
   font-size:14.5px;
   font-family:inherit;
-  background:var(--card);
-  color:var(--ink);
-  transition:border-color .15s ease, box-shadow .15s ease;
+  background:rgba(255,255,255,0.07);
+  color:#fff;
+  transition:border-color .15s ease, background .15s ease;
 }
+.search-box input::placeholder{ color:rgba(255,255,255,0.45); }
 .search-box input:focus{
   outline:none;
-  border-color:var(--blue-500);
-  box-shadow:0 0 0 3px var(--blue-100);
+  border-color:#8EF0D3;
+  background:rgba(255,255,255,0.12);
 }
 .search-box svg{
   position:absolute;
@@ -113,100 +153,134 @@ h1{
   transform:translateY(-50%);
   width:16px;
   height:16px;
-  stroke:var(--ink-soft);
+  stroke:rgba(255,255,255,0.55);
 }
 
 .refresh-btn{
   display:flex;
   align-items:center;
   gap:6px;
-  padding:11px 14px;
-  border:1.5px solid var(--line);
-  border-radius:10px;
-  background:var(--card);
-  color:var(--ink-soft);
+  padding:12px 15px;
+  border:1.5px solid var(--hero-line);
+  border-radius:11px;
+  background:rgba(255,255,255,0.07);
+  color:var(--white-soft);
   font-family:inherit;
   font-size:13.5px;
   font-weight:600;
   cursor:pointer;
-  transition:border-color .15s ease, color .15s ease;
+  transition:border-color .15s ease, color .15s ease, background .15s ease;
   white-space:nowrap;
 }
-.refresh-btn:hover{ border-color:var(--blue-500); color:var(--blue-700); }
+.refresh-btn:hover{ border-color:#8EF0D3; color:#fff; background:rgba(255,255,255,0.12); }
 .refresh-btn svg{ width:15px; height:15px; stroke:currentColor; transition:transform .5s ease; }
 .refresh-btn.spinning svg{ animation:spin .7s linear infinite; }
 @keyframes spin{ to{ transform:rotate(360deg); } }
 
+/* ---------- TABS ---------- */
 .tabs{
   display:flex;
   gap:8px;
   flex-wrap:wrap;
-  margin-bottom:24px;
+  padding-bottom:2px;
 }
 
 .tab{
+  position:relative;
   padding:9px 16px;
   border-radius:999px;
-  border:1.5px solid var(--line);
-  background:var(--card);
-  color:var(--ink-soft);
+  border:1.5px solid var(--hero-line);
+  background:rgba(255,255,255,0.06);
+  color:var(--white-soft);
   font-family:inherit;
   font-size:13.5px;
-  font-weight:600;
+  font-weight:700;
   cursor:pointer;
-  transition:all .15s ease;
+  transition:all .18s ease;
+  display:flex;
+  align-items:center;
+  gap:7px;
 }
-.tab:hover{ border-color:var(--blue-500); color:var(--blue-700); }
+.tab .swatch{
+  width:8px; height:8px; border-radius:50%;
+  flex-shrink:0;
+}
+.tab:hover{ border-color:rgba(255,255,255,0.4); color:#fff; }
 .tab.active{
-  background:var(--blue-700);
-  border-color:var(--blue-700);
-  color:#fff;
+  color:var(--ink);
+  border-color:transparent;
+  box-shadow:0 6px 16px rgba(0,0,0,0.25);
 }
 .tab .count{
-  opacity:.7;
-  font-weight:500;
-  margin-left:3px;
+  opacity:.75;
+  font-weight:600;
+  margin-left:1px;
+}
+
+/* ---------- BODY ---------- */
+.wrap{
+  max-width:1040px;
+  margin:0 auto;
+  padding:26px 24px 80px;
 }
 
 .status-line{
   font-size:12.5px;
   color:var(--ink-soft);
-  margin-bottom:18px;
+  margin-bottom:20px;
   display:flex;
   align-items:center;
   gap:6px;
 }
 .status-dot{
   width:6px; height:6px; border-radius:50%;
-  background:var(--emerald);
+  background:#12946B;
   flex-shrink:0;
 }
-.status-dot.error{ background:var(--coral); }
+.status-dot.error{ background:#DD5B3F; }
 
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));
-  gap:12px;
+  grid-template-columns:repeat(auto-fill, minmax(210px, 1fr));
+  gap:14px;
 }
 
 .card{
+  position:relative;
   display:flex;
   flex-direction:column;
   justify-content:space-between;
-  gap:22px;
-  padding:20px 20px 18px;
-  min-height:118px;
+  gap:24px;
+  padding:22px 20px 19px;
+  min-height:120px;
   background:var(--card);
   border:1.5px solid var(--line);
   border-radius:var(--radius);
   text-decoration:none;
   color:inherit;
+  overflow:hidden;
   transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+  animation:cardIn .35s ease backwards;
+}
+.card::before{
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0;
+  height:4px;
+  background:var(--accent, var(--c0-solid));
 }
 .card:hover{
-  border-color:var(--blue-500);
-  transform:translateY(-2px);
-  box-shadow:0 10px 24px rgba(29,78,216,0.10);
+  border-color:var(--accent, var(--c0-solid));
+  transform:translateY(-3px);
+  box-shadow:0 14px 30px rgba(14,21,48,0.12);
+}
+
+@keyframes cardIn{
+  from{ opacity:0; transform:translateY(8px); }
+  to{ opacity:1; transform:translateY(0); }
+}
+@media (prefers-reduced-motion: reduce){
+  .card{ animation:none; }
 }
 
 .card-top{
@@ -219,11 +293,11 @@ h1{
 .badge{
   flex-shrink:0;
   font-size:11.5px;
-  font-weight:700;
+  font-weight:800;
   padding:4px 9px;
   border-radius:6px;
-  background:var(--blue-100);
-  color:var(--blue-700);
+  background:var(--accent-tint, var(--c0-tint));
+  color:var(--accent, var(--c0-solid));
   white-space:nowrap;
 }
 
@@ -239,7 +313,7 @@ h1{
   transition:background .15s ease, transform .15s ease;
 }
 .card:hover .go-arrow{
-  background:var(--blue-700);
+  background:var(--accent, var(--c0-solid));
   transform:translate(2px,-2px);
 }
 .go-arrow svg{ width:13px; height:13px; stroke:var(--ink-soft); transition:stroke .15s ease; }
@@ -262,55 +336,62 @@ h1{
   color:var(--ink-soft);
   font-size:14px;
 }
-.error-box{ color:var(--coral); }
-.error-box a{ color:var(--blue-700); }
+.error-box{ color:#DD5B3F; }
+.error-box a{ color:#2F5FE0; }
 
 .spinner{
   width:22px; height:22px;
   border:2.5px solid var(--line);
-  border-top-color:var(--blue-700);
+  border-top-color:#2F5FE0;
   border-radius:50%;
   margin:0 auto 12px;
   animation:spin .7s linear infinite;
 }
 
 footer{
-  margin-top:48px;
+  margin-top:44px;
   padding-top:20px;
   border-top:1px solid var(--line);
   font-size:12.5px;
   color:var(--ink-soft);
   text-align:center;
 }
-footer a{ color:var(--blue-700); text-decoration:none; }
+footer a{ color:#2F5FE0; text-decoration:none; }
 
 @media (max-width:520px){
-  .wrap{ padding:32px 16px 60px; }
+  .hero{ padding:40px 16px 24px; }
+  .wrap{ padding:22px 16px 60px; }
   .card-title{ white-space:normal; }
 }
 </style>
 </head>
 <body>
 
-<div class="wrap">
-  <header class="hero">
-    <p class="eyebrow">Course Materials</p>
-    <h1>과목 자료 모음</h1>
-    <p class="sub">차수별 과목 링크를 한 곳에서 확인하세요. 스프레드시트가 업데이트되면 이 페이지에도 자동으로 반영됩니다.</p>
-  </header>
-
-  <div class="toolbar">
-    <div class="search-box">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="searchInput" placeholder="과목명으로 검색">
+<div class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow-row">
+      <p class="eyebrow">Course Materials</p>
+      <div class="dot-legend" id="dotLegend"></div>
     </div>
-    <button class="refresh-btn" id="refreshBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-      새로고침
-    </button>
-  </div>
+    <h1>차수/과목별 선발자 명단</h1>
+    <p class="sub">차수별 과목 링크를 한 곳에서 확인하세요. 스프레드시트가 업데이트되면 이 페이지에도 자동으로 반영됩니다.</p>
 
-  <div class="tabs" id="tabs" style="display:none;"></div>
+    <div class="toolbar">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="과목명으로 검색">
+      </div>
+      <button class="refresh-btn" id="refreshBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        새로고침
+      </button>
+    </div>
+
+    <div class="tabs" id="tabs" style="display:none;"></div>
+  </div>
+</div>
+
+<div class="wrap">
   <div class="status-line" id="statusLine"></div>
 
   <div id="content">
@@ -324,34 +405,70 @@ footer a{ color:var(--blue-700); text-decoration:none; }
 
 <script>
 const SHEET_ID = '1hg2PVIp408jOFEdNLEPlE8H9ifUqMNJG1ln4WZQ5NUs';
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 const AUTO_REFRESH_MS = 5 * 60 * 1000; // 5분마다 자동 새로고침
+
+// 차수별 색상 팔레트 (등장 순서대로 순환 배정)
+const PALETTE = [
+  { solid: '#2F5FE0', tint: '#E9EEFD' },
+  { solid: '#12946B', tint: '#E1F5EC' },
+  { solid: '#C2790E', tint: '#FBF0DD' },
+  { solid: '#DD5B3F', tint: '#FCE8E3' },
+  { solid: '#7B42E0', tint: '#F0E9FE' },
+  { solid: '#0E8E8E', tint: '#DFF4F4' },
+];
 
 let allRows = [];   // [{round, subject, link}]
 let rounds = [];    // 차수 목록 (등장 순서)
+let roundColor = {}; // round -> {solid, tint}
 let activeTab = 'ALL';
 
 const contentEl = document.getElementById('content');
 const tabsEl = document.getElementById('tabs');
 const statusEl = document.getElementById('statusLine');
+const dotLegendEl = document.getElementById('dotLegend');
 const searchInput = document.getElementById('searchInput');
 const refreshBtn = document.getElementById('refreshBtn');
 
 function naturalKeyForRound(r){
-  // "1차", "2차" 처럼 숫자가 포함되어 있으면 숫자 기준 정렬, 아니면 문자열 기준
   const m = String(r).match(/-?\d+(\.\d+)?/);
   return m ? parseFloat(m[0]) : Number.POSITIVE_INFINITY;
 }
 
-async function fetchSheet(){
-  const res = await fetch(SHEET_URL + '&t=' + Date.now(), { cache: 'no-store' });
-  if(!res.ok) throw new Error('네트워크 오류 (' + res.status + ')');
-  const text = await res.text();
-  const jsonStart = text.indexOf('{');
-  const jsonEnd = text.lastIndexOf('}');
-  if(jsonStart === -1 || jsonEnd === -1) throw new Error('시트 응답을 해석할 수 없습니다');
-  const data = JSON.parse(text.slice(jsonStart, jsonEnd + 1));
-  return data.table;
+function fetchSheet(){
+  return new Promise((resolve, reject) => {
+    const callbackName = 'gsheetCb_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
+    const script = document.createElement('script');
+
+    const timeoutId = setTimeout(() => {
+      cleanup();
+      reject(new Error('요청 시간이 초과되었습니다 (10초). 네트워크 상태를 확인해주세요.'));
+    }, 10000);
+
+    function cleanup(){
+      clearTimeout(timeoutId);
+      delete window[callbackName];
+      if(script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    window[callbackName] = function(response){
+      cleanup();
+      if(!response || response.status === 'error'){
+        const msg = (response && response.errors && response.errors[0] && response.errors[0].detailed_message)
+          || '시트에 접근할 수 없습니다. 공유 설정을 확인해주세요.';
+        reject(new Error(msg));
+        return;
+      }
+      resolve(response.table);
+    };
+
+    script.onerror = function(){
+      cleanup();
+      reject(new Error('스크립트 로드에 실패했습니다. 시트 ID 또는 네트워크 연결을 확인해주세요.'));
+    };
+
+    script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${callbackName}&t=${Date.now()}`;
+    document.body.appendChild(script);
+  });
 }
 
 function findColIndex(cols, names){
@@ -368,7 +485,6 @@ function parseTable(table){
   let subjectIdx = findColIndex(cols, ['과목']);
   let linkIdx = findColIndex(cols, ['링크']);
 
-  // 헤더 이름이 정확히 매칭되지 않으면 앞 3개 열을 순서대로 사용
   if(roundIdx === -1 || subjectIdx === -1 || linkIdx === -1){
     roundIdx = 0; subjectIdx = 1; linkIdx = 2;
   }
@@ -386,24 +502,38 @@ function parseTable(table){
   return rows;
 }
 
+function assignColors(){
+  roundColor = {};
+  rounds.forEach((r, i) => {
+    roundColor[r] = PALETTE[i % PALETTE.length];
+  });
+}
+
 function render(){
-  // 탭 목록 구성
   const seen = new Set();
   rounds = [];
   allRows.forEach(r => { if(!seen.has(r.round)){ seen.add(r.round); rounds.push(r.round); } });
   rounds.sort((a,b) => naturalKeyForRound(a) - naturalKeyForRound(b));
+  assignColors();
 
   const query = searchInput.value.trim().toLowerCase();
   const searching = query.length > 0;
 
-  // 탭 UI
+  // 상단 컬러 레전드 점
+  dotLegendEl.innerHTML = rounds.map(r => `<span style="background:${roundColor[r].solid}"></span>`).join('');
+
   if(rounds.length > 0){
     tabsEl.style.display = 'flex';
     const tabHtml = ['ALL', ...rounds].map(r => {
       const label = r === 'ALL' ? '전체' : r;
       const count = r === 'ALL' ? allRows.length : allRows.filter(x => x.round === r).length;
       const isActive = !searching && activeTab === r;
-      return `<button class="tab ${isActive ? 'active' : ''}" data-round="${escapeAttr(r)}">${escapeHtml(label)} <span class="count">${count}</span></button>`;
+      const color = r === 'ALL' ? '#FFFFFF' : roundColor[r].solid;
+      const style = isActive ? `background:${color};` : '';
+      const swatch = r === 'ALL'
+        ? `<span class="swatch" style="background:linear-gradient(135deg, #2F5FE0, #8EF0D3)"></span>`
+        : `<span class="swatch" style="background:${roundColor[r].solid}"></span>`;
+      return `<button class="tab ${isActive ? 'active' : ''}" style="${style}" data-round="${escapeAttr(r)}">${swatch}${escapeHtml(label)} <span class="count">${count}</span></button>`;
     }).join('');
     tabsEl.innerHTML = tabHtml;
     tabsEl.querySelectorAll('.tab').forEach(btn => {
@@ -417,7 +547,6 @@ function render(){
     tabsEl.style.display = 'none';
   }
 
-  // 목록 필터링
   let rowsToShow;
   if(searching){
     rowsToShow = allRows.filter(r => r.subject.toLowerCase().includes(query));
@@ -433,8 +562,10 @@ function render(){
   }
 
   const showBadge = searching || activeTab === 'ALL';
-  contentEl.innerHTML = `<div class="grid">` + rowsToShow.map(r => `
-    <a class="card" href="${escapeAttr(r.link)}" target="_blank" rel="noopener">
+  contentEl.innerHTML = `<div class="grid">` + rowsToShow.map((r, i) => {
+    const c = roundColor[r.round] || PALETTE[0];
+    return `
+    <a class="card" style="--accent:${c.solid};--accent-tint:${c.tint};animation-delay:${Math.min(i * 30, 240)}ms" href="${escapeAttr(r.link)}" target="_blank" rel="noopener">
       <div class="card-top">
         ${showBadge ? `<span class="badge">${escapeHtml(r.round)}</span>` : `<span></span>`}
         <span class="go-arrow">
@@ -443,7 +574,8 @@ function render(){
       </div>
       <span class="card-title">${escapeHtml(r.subject)}</span>
     </a>
-  `).join('') + `</div>`;
+  `;
+  }).join('') + `</div>`;
 }
 
 function escapeHtml(str){
@@ -465,11 +597,13 @@ async function load(isManual){
     setStatus(true, `마지막 업데이트: ${timeStr} · 총 ${allRows.length}개 과목`);
     render();
   }catch(err){
+    console.error('시트 로드 실패:', err);
     setStatus(false, '데이터를 불러오지 못했습니다.');
     contentEl.innerHTML = `<div class="error-box">
       스프레드시트를 불러오지 못했습니다.<br>
-      시트가 <strong>"링크가 있는 모든 사용자에게 공개(뷰어)"</strong>로 공유되어 있는지 확인해주세요.<br>
-      <a href="https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?usp=sharing" target="_blank" rel="noopener">스프레드시트 열기</a>
+      시트가 <strong>"링크가 있는 모든 사용자에게 공개(뷰어)"</strong>로 공유되어 있는지, 시트 ID가 올바른지 확인해주세요.<br>
+      <a href="https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?usp=sharing" target="_blank" rel="noopener">스프레드시트 열기</a><br>
+      <span style="display:block;margin-top:10px;font-size:11.5px;color:var(--ink-soft);">상세 오류: ${escapeHtml(err.message || String(err))}</span>
     </div>`;
   }finally{
     if(isManual) setTimeout(() => refreshBtn.classList.remove('spinning'), 400);
