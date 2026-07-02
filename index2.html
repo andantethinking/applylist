@@ -715,13 +715,19 @@ table.sheet-table td{
   vertical-align:top;
 }
 table.sheet-table tr:first-child td{
-  background:#E9EEFD;
+  background:var(--hero-1);
+  color:#fff;
   font-weight:800;
   border-bottom:2px solid #2F5FE0;
   position:sticky;
   top:0;
   z-index:2;
 }
+table.sheet-table tr:first-child td input{
+  color:#fff;
+  font-weight:800;
+}
+table.sheet-table tr:first-child td input::placeholder{ color:rgba(255,255,255,0.6); }
 table.sheet-table td input{
   width:100%;
   min-width:110px;
@@ -738,6 +744,10 @@ table.sheet-table td input:focus{
   background:#fff;
   position:relative;
   z-index:1;
+}
+table.sheet-table tr:first-child td input:focus{
+  background:var(--hero-1);
+  color:#fff;
 }
 table.sheet-table td select{
   width:100%;
