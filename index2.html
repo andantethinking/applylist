@@ -775,10 +775,37 @@ table.sheet-table td select:focus{
   position:relative;
   z-index:1;
 }
-table.sheet-table tr.row-selected td{ background:#EAF7F0; }
-table.sheet-table tr.row-cancelled td{ background:#FDEEEC; }
-table.sheet-table tr.row-selected td select{ color:#0F7A54; }
-table.sheet-table tr.row-cancelled td select{ color:#B84631; }
+.status-badge{
+  display:inline-block;
+  padding:3px 12px;
+  border-radius:999px;
+  font-size:12.5px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.status-badge.badge-selected{ background:#DFF5E9; color:#0F7A54; }
+.status-badge.badge-cancelled{ background:#FCE4E0; color:#B84631; }
+
+table.sheet-table td.status-cell{ text-align:left; }
+table.sheet-table td select.status-select{
+  width:auto;
+  min-width:0;
+  display:inline-block;
+  margin:6px 0 6px 8px;
+  padding:4px 26px 4px 12px;
+  border-radius:999px;
+  font-size:12.5px;
+  font-weight:800;
+  background-color:var(--paper);
+  color:var(--ink);
+}
+table.sheet-table td select.status-select.badge-selected{ background-color:#DFF5E9; color:#0F7A54; }
+table.sheet-table td select.status-select.badge-cancelled{ background-color:#FCE4E0; color:#B84631; }
+
+table.sheet-table tr:not(:first-child):hover td{
+  background:#EEF2FA;
+}
+
 table.sheet-table td.readonly-cell{
   padding:8px 10px;
   font-size:13px;
@@ -1502,6 +1529,13 @@ function normalizeGrid(grid){
   }
 }
 
+function badgeClassFor(val){
+  const trimmedVal = (val || '').toString().trim();
+  if(trimmedVal === '선발') return 'badge-selected';
+  if(trimmedVal === '취소') return 'badge-cancelled';
+  return '';
+}
+
 function renderPanelTable(){
   if(currentGrid.length === 0){
     sheetPanelBody.innerHTML = `<div class="empty">표시할 데이터가 없습니다.</div>`;
@@ -1510,22 +1544,15 @@ function renderPanelTable(){
   const headerRow = currentGrid[0] || [];
   const statusColIdx = headerRow.findIndex(h => normalizeHeaderText(h) === '상태');
 
-  const rowClassFor = (r) => {
-    if(r === 0 || statusColIdx === -1) return '';
-    const val = (currentGrid[r][statusColIdx] || '').toString().trim();
-    if(val === '선발') return 'row-selected';
-    if(val === '취소') return 'row-cancelled';
-    return '';
-  };
-
   const rowsHtml = currentGrid.map((row, r) => {
     const cellsHtml = row.map((val, c) => {
+      const isStatusCell = c === statusColIdx && r > 0;
       if(panelEditable){
-        if(c === statusColIdx && r > 0){
+        if(isStatusCell){
           const known = ['', '선발', '취소'];
           const extra = known.includes(val) ? '' : `<option value="${escapeAttr(val)}" selected>${escapeHtml(val)}</option>`;
-          return `<td>
-            <select data-r="${r}" data-c="${c}" class="status-select">
+          return `<td class="status-cell">
+            <select data-r="${r}" data-c="${c}" class="status-select ${badgeClassFor(val)}">
               ${extra}
               <option value="" ${val === '' ? 'selected' : ''}>-</option>
               <option value="선발" ${val === '선발' ? 'selected' : ''}>선발</option>
@@ -1535,10 +1562,14 @@ function renderPanelTable(){
         }
         return `<td><input type="text" value="${escapeAttr(val)}" data-r="${r}" data-c="${c}"></td>`;
       }
+      if(isStatusCell){
+        const badgeClass = badgeClassFor(val);
+        const content = badgeClass ? `<span class="status-badge ${badgeClass}">${escapeHtml(val)}</span>` : escapeHtml(val);
+        return `<td class="readonly-cell status-cell">${content}</td>`;
+      }
       return `<td class="readonly-cell">${escapeHtml(val)}</td>`;
     }).join('');
-    const rowClass = rowClassFor(r);
-    return `<tr${rowClass ? ` class="${rowClass}"` : ''}>${cellsHtml}</tr>`;
+    return `<tr>${cellsHtml}</tr>`;
   }).join('');
   sheetPanelBody.innerHTML = `<table class="sheet-table">${rowsHtml}</table>`;
 
@@ -1557,8 +1588,7 @@ function renderPanelTable(){
         const c = Number(select.getAttribute('data-c'));
         currentGrid[r][c] = select.value;
         markPanelDirty();
-        const tr = select.closest('tr');
-        if(tr) tr.className = rowClassFor(r);
+        select.className = `status-select ${badgeClassFor(select.value)}`.trim();
       });
     });
   }
