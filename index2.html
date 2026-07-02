@@ -1305,7 +1305,7 @@ let panelEditable = false;
 let panelStartRow = 1; // currentGrid[0]이 실제 시트에서 몇 번째 행인지 (저장 시 범위 계산용)
 
 // 대상 시트의 실제 제목행 열 이름 (이 조합이 나오는 첫 행을 제목행으로 판단)
-const TARGET_HEADER_LABELS = ['연번', '이름', '구분', '소속', '취소요청일', '취소공문발송일', '상태'];
+const TARGET_HEADER_LABELS = ['연번', '번호', '이름', '구분', '소속', '취소요청일', '취소공문발송일', '상태'];
 
 function findHeaderRowIndex(grid){
   for(let i = 0; i < grid.length; i++){
