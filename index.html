@@ -92,49 +92,55 @@ a:focus-visible, button:focus-visible, input:focus-visible{
   margin:0 auto;
 }
 
-.eyebrow-row{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin-bottom:14px;
-}
-.eyebrow{
-  font-size:12.5px;
-  font-weight:700;
-  letter-spacing:0.12em;
-  color:var(--white-soft);
-  text-transform:uppercase;
-  margin:0;
-}
 .dot-legend{
   display:flex;
   gap:5px;
+  margin-bottom:16px;
 }
 .dot-legend span{
   width:6px; height:6px; border-radius:50%;
   display:inline-block;
 }
 
-.title-logo{
-  display:block;
-  max-height:168px;
-  width:auto;
-  margin-bottom:16px;
-  cursor:pointer;
-  transition:opacity .15s ease, transform .15s ease;
-}
-.title-logo:hover{ opacity:0.85; transform:translateY(-1px); }
-
 h1{
-  font-size:clamp(18px,2.2vw,22px);
+  font-size:clamp(35px,5.4vw,51px);
   font-weight:800;
   letter-spacing:-0.02em;
   margin:0 0 12px;
+  line-height:1.32;
+  cursor:pointer;
   background:linear-gradient(100deg, #FFFFFF 20%, #B9C6FF 60%, #8EF0D3 100%);
   -webkit-background-clip:text;
   background-clip:text;
   color:transparent;
-  line-height:1.15;
+}
+
+.title-year{
+  display:block;
+  font-size:0.5em;
+  font-weight:700;
+  letter-spacing:0.1em;
+  margin-bottom:6px;
+  color:#4FA3FF;
+}
+
+.title-amp{
+  font-size:0.62em;
+  font-weight:700;
+  vertical-align:middle;
+  color:#FFFFFF;
+  opacity:0.85;
+}
+
+.title-ai{
+  color:var(--hero-1);
+  font-weight:900;
+  -webkit-text-stroke:1.3px #fff;
+  text-shadow:
+    -1px -1px 0 #fff, 1px -1px 0 #fff,
+    -1px  1px 0 #fff, 1px  1px 0 #fff,
+     0   -1.4px 0 #fff, 0    1.4px 0 #fff,
+    -1.4px 0    0 #fff, 1.4px 0    0 #fff;
 }
 
 .sub{
@@ -553,12 +559,12 @@ footer a{ color:#2F5FE0; text-decoration:none; }
 
 <div class="hero">
   <div class="hero-inner">
-    <div class="eyebrow-row">
-      <p class="eyebrow">Course Materials</p>
-      <div class="dot-legend" id="dotLegend"></div>
-    </div>
-    <img src="https://andantethinking.github.io/applylist/title.png" alt="로고 - 처음으로" class="title-logo" id="titleLogo" onerror="this.style.display='none'">
-    <h1>차수/과목별 선발자 명단</h1>
+    <div class="dot-legend" id="dotLegend"></div>
+    <h1 id="titleHeading">
+      <span class="title-year">2026</span>
+      공공 <span class="title-ai">AI</span> 역량트랙 <span class="title-amp">&amp;</span><br>
+      <span class="title-ai">AI</span> 챔피언 종합과정
+    </h1>
     <p class="sub">스프레드시트가 업데이트되면 이 페이지에도 자동으로 반영됩니다.</p>
   </div>
 </div>
@@ -623,7 +629,7 @@ let currentView = 'detail'; // 기본값: 검색창 바로 아래 차수 탭 + �
 const contentEl = document.getElementById('content');
 const tabsEl = document.getElementById('tabs');
 const backBtn = document.getElementById('backBtn');
-const titleLogo = document.getElementById('titleLogo');
+const titleHeading = document.getElementById('titleHeading');
 const statusEl = document.getElementById('statusLine');
 const dotLegendEl = document.getElementById('dotLegend');
 const searchInput = document.getElementById('searchInput');
@@ -637,7 +643,7 @@ backBtn.addEventListener('click', () => {
   render();
 });
 
-titleLogo.addEventListener('click', () => {
+titleHeading.addEventListener('click', () => {
   currentView = 'rounds';
   activeTab = 'ALL';
   searchInput.value = '';
