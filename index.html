@@ -97,7 +97,7 @@ body{
 
 .title-logo{
   display:block;
-  max-height:56px;
+  max-height:168px;
   width:auto;
   margin-bottom:16px;
   cursor:pointer;
@@ -106,7 +106,7 @@ body{
 .title-logo:hover{ opacity:0.85; transform:translateY(-1px); }
 
 h1{
-  font-size:clamp(30px,4.6vw,44px);
+  font-size:clamp(18px,2.2vw,22px);
   font-weight:800;
   letter-spacing:-0.02em;
   margin:0 0 12px;
@@ -118,11 +118,14 @@ h1{
 }
 
 .sub{
-  font-size:15px;
+  font-size:14px;
   color:var(--white-soft);
   margin:0 0 30px;
   line-height:1.6;
-  max-width:520px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:100%;
 }
 
 .toolbar{
@@ -141,7 +144,7 @@ h1{
 
 .search-box input{
   width:100%;
-  padding:13px 16px 13px 40px;
+  padding:13px 40px 13px 40px;
   border:1.5px solid var(--hero-line);
   border-radius:11px;
   font-size:14.5px;
@@ -164,6 +167,28 @@ h1{
   width:16px;
   height:16px;
   stroke:rgba(255,255,255,0.55);
+}
+.search-clear{
+  position:absolute;
+  right:8px;
+  top:50%;
+  transform:translateY(-50%);
+  width:24px;
+  height:24px;
+  border:none;
+  border-radius:50%;
+  background:rgba(255,255,255,0.12);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition:background .15s ease;
+}
+.search-clear.visible{ display:flex; }
+.search-clear:hover{ background:rgba(255,255,255,0.22); }
+.search-clear svg{
+  width:12px; height:12px;
+  stroke:rgba(255,255,255,0.85);
 }
 
 .refresh-btn{
@@ -490,12 +515,15 @@ footer a{ color:#2F5FE0; text-decoration:none; }
     </div>
     <img src="title.png" alt="로고 - 처음으로" class="title-logo" id="titleLogo" onerror="this.style.display='none'">
     <h1>차수/과목별 선발자 명단</h1>
-    <p class="sub">차수별 과목 링크를 한 곳에서 확인하세요. 스프레드시트가 업데이트되면 이 페이지에도 자동으로 반영됩니다.</p>
+    <p class="sub">스프레드시트가 업데이트되면 이 페이지에도 자동으로 반영됩니다.</p>
 
     <div class="toolbar">
       <div class="search-box">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="searchInput" placeholder="과목명으로 검색">
+        <button class="search-clear" id="searchClear" type="button" aria-label="검색어 지우기">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
       </div>
       <button class="refresh-btn" id="refreshBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
@@ -550,6 +578,7 @@ const titleLogo = document.getElementById('titleLogo');
 const statusEl = document.getElementById('statusLine');
 const dotLegendEl = document.getElementById('dotLegend');
 const searchInput = document.getElementById('searchInput');
+const searchClear = document.getElementById('searchClear');
 const refreshBtn = document.getElementById('refreshBtn');
 
 backBtn.addEventListener('click', () => {
@@ -662,6 +691,7 @@ function render(){
   const query = searchInput.value.trim().toLowerCase();
   const searching = query.length > 0;
   const mode = searching ? 'search' : currentView;
+  searchClear.classList.toggle('visible', searchInput.value.length > 0);
 
   // 상단 컬러 레전드 점
   dotLegendEl.innerHTML = rounds.map(r => `<span style="background:${roundColor[r].solid}"></span>`).join('');
@@ -801,6 +831,11 @@ async function load(isManual){
 }
 
 searchInput.addEventListener('input', render);
+searchClear.addEventListener('click', () => {
+  searchInput.value = '';
+  searchInput.focus();
+  render();
+});
 refreshBtn.addEventListener('click', () => load(true));
 
 load(false);
