@@ -177,6 +177,25 @@ h1{
 .refresh-btn.spinning svg{ animation:spin .7s linear infinite; }
 @keyframes spin{ to{ transform:rotate(360deg); } }
 
+/* ---------- BACK BUTTON ---------- */
+.back-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:8px 4px;
+  margin-bottom:14px;
+  border:none;
+  background:none;
+  color:var(--white-soft);
+  font-family:inherit;
+  font-size:13.5px;
+  font-weight:700;
+  cursor:pointer;
+  transition:color .15s ease;
+}
+.back-btn:hover{ color:#fff; }
+.back-btn svg{ width:15px; height:15px; stroke:currentColor; }
+
 /* ---------- TABS ---------- */
 .tabs{
   display:flex;
@@ -250,9 +269,9 @@ h1{
   display:flex;
   flex-direction:column;
   justify-content:space-between;
-  gap:24px;
+  gap:20px;
   padding:22px 20px 19px;
-  min-height:120px;
+  min-height:150px;
   background:var(--card);
   border:1.5px solid var(--line);
   border-radius:var(--radius);
@@ -319,15 +338,101 @@ h1{
 .go-arrow svg{ width:13px; height:13px; stroke:var(--ink-soft); transition:stroke .15s ease; }
 .card:hover .go-arrow svg{ stroke:#fff; }
 
+.card-body{
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+}
+
+.card-meta{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.meta-item{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:12.5px;
+  font-weight:600;
+  color:var(--ink-soft);
+}
+.meta-item svg{
+  width:13px; height:13px;
+  stroke:var(--ink-soft);
+  flex-shrink:0;
+}
+
 .card-title{
   font-size:15.5px;
   font-weight:700;
   color:var(--ink);
   line-height:1.4;
   display:-webkit-box;
-  -webkit-line-clamp:3;
+  -webkit-line-clamp:2;
   -webkit-box-orient:vertical;
   overflow:hidden;
+}
+
+.round-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(230px, 1fr));
+  gap:16px;
+}
+
+.round-card{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  gap:26px;
+  padding:24px 22px 20px;
+  min-height:128px;
+  background:var(--card);
+  border:1.5px solid var(--line);
+  border-radius:var(--radius);
+  cursor:pointer;
+  text-align:left;
+  font-family:inherit;
+  overflow:hidden;
+  transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+  animation:cardIn .35s ease backwards;
+}
+.round-card::before{
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0;
+  height:5px;
+  background:var(--accent, var(--c0-solid));
+}
+.round-card:hover{
+  border-color:var(--accent, var(--c0-solid));
+  transform:translateY(-3px);
+  box-shadow:0 14px 30px rgba(14,21,48,0.12);
+}
+.round-card-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+}
+.round-eyebrow{
+  font-size:11.5px;
+  font-weight:800;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  color:var(--accent, var(--c0-solid));
+}
+.round-name{
+  font-size:19px;
+  font-weight:800;
+  color:var(--ink);
+  line-height:1.35;
+}
+.round-count{
+  font-size:12.5px;
+  font-weight:700;
+  color:var(--ink-soft);
 }
 
 .empty, .loading, .error-box{
@@ -387,6 +492,10 @@ footer a{ color:#2F5FE0; text-decoration:none; }
       </button>
     </div>
 
+    <button class="back-btn" id="backBtn" style="display:none;">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      전체 차수
+    </button>
     <div class="tabs" id="tabs" style="display:none;"></div>
   </div>
 </div>
@@ -421,13 +530,21 @@ let allRows = [];   // [{round, subject, link}]
 let rounds = [];    // 차수 목록 (등장 순서)
 let roundColor = {}; // round -> {solid, tint}
 let activeTab = 'ALL';
+let currentView = 'rounds'; // 'rounds' (첫 화면 - 차수 목록) | 'detail' (탭 + 과목 리스트)
 
 const contentEl = document.getElementById('content');
 const tabsEl = document.getElementById('tabs');
+const backBtn = document.getElementById('backBtn');
 const statusEl = document.getElementById('statusLine');
 const dotLegendEl = document.getElementById('dotLegend');
 const searchInput = document.getElementById('searchInput');
 const refreshBtn = document.getElementById('refreshBtn');
+
+backBtn.addEventListener('click', () => {
+  currentView = 'rounds';
+  searchInput.value = '';
+  render();
+});
 
 function naturalKeyForRound(r){
   const m = String(r).match(/-?\d+(\.\d+)?/);
@@ -483,21 +600,26 @@ function parseTable(table){
   const cols = table.cols || [];
   let roundIdx = findColIndex(cols, ['차수']);
   let subjectIdx = findColIndex(cols, ['과목']);
+  let sessionIdx = findColIndex(cols, ['회차']);
+  let periodIdx = findColIndex(cols, ['교육기간']);
   let linkIdx = findColIndex(cols, ['링크']);
 
   if(roundIdx === -1 || subjectIdx === -1 || linkIdx === -1){
-    roundIdx = 0; subjectIdx = 1; linkIdx = 2;
+    roundIdx = 0; subjectIdx = 1; sessionIdx = 2; periodIdx = 3; linkIdx = 4;
   }
 
   const rows = [];
   (table.rows || []).forEach(row => {
     const cells = row.c || [];
-    const round = cells[roundIdx] && cells[roundIdx].v != null ? String(cells[roundIdx].v).trim() : '';
-    const subject = cells[subjectIdx] && cells[subjectIdx].v != null ? String(cells[subjectIdx].v).trim() : '';
-    let link = cells[linkIdx] && cells[linkIdx].v != null ? String(cells[linkIdx].v).trim() : '';
+    const cellStr = (idx) => (idx > -1 && cells[idx] && cells[idx].v != null) ? String(cells[idx].v).trim() : '';
+    const round = cellStr(roundIdx);
+    const subject = cellStr(subjectIdx);
+    const session = cellStr(sessionIdx);
+    const period = cellStr(periodIdx);
+    let link = cellStr(linkIdx);
     if(!round || !subject || !link) return;
     if(!/^https?:\/\//i.test(link)) link = 'https://' + link;
-    rows.push({ round, subject, link });
+    rows.push({ round, subject, session, period, link });
   });
   return rows;
 }
@@ -518,16 +640,19 @@ function render(){
 
   const query = searchInput.value.trim().toLowerCase();
   const searching = query.length > 0;
+  const mode = searching ? 'search' : currentView;
 
   // 상단 컬러 레전드 점
   dotLegendEl.innerHTML = rounds.map(r => `<span style="background:${roundColor[r].solid}"></span>`).join('');
 
-  if(rounds.length > 0){
+  // 탭 / 뒤로가기 버튼: 상세 화면일 때만 노출
+  if(mode === 'detail' && rounds.length > 0){
     tabsEl.style.display = 'flex';
+    backBtn.style.display = 'inline-flex';
     const tabHtml = ['ALL', ...rounds].map(r => {
       const label = r === 'ALL' ? '전체' : r;
       const count = r === 'ALL' ? allRows.length : allRows.filter(x => x.round === r).length;
-      const isActive = !searching && activeTab === r;
+      const isActive = activeTab === r;
       const color = r === 'ALL' ? '#FFFFFF' : roundColor[r].solid;
       const style = isActive ? `background:${color};` : '';
       const swatch = r === 'ALL'
@@ -539,29 +664,34 @@ function render(){
     tabsEl.querySelectorAll('.tab').forEach(btn => {
       btn.addEventListener('click', () => {
         activeTab = btn.getAttribute('data-round');
-        searchInput.value = '';
         render();
       });
     });
   } else {
     tabsEl.style.display = 'none';
+    backBtn.style.display = 'none';
   }
 
-  let rowsToShow;
-  if(searching){
-    rowsToShow = allRows.filter(r => r.subject.toLowerCase().includes(query));
-  } else if(activeTab === 'ALL'){
-    rowsToShow = allRows;
-  } else {
-    rowsToShow = allRows.filter(r => r.round === activeTab);
-  }
-
-  if(rowsToShow.length === 0){
-    contentEl.innerHTML = `<div class="empty">${searching ? '검색 결과가 없습니다.' : '표시할 과목이 없습니다.'}</div>`;
+  if(mode === 'rounds'){
+    renderRoundsLanding();
     return;
   }
 
-  const showBadge = searching || activeTab === 'ALL';
+  let rowsToShow;
+  let showBadge;
+  if(mode === 'search'){
+    rowsToShow = allRows.filter(r => r.subject.toLowerCase().includes(query));
+    showBadge = true;
+  } else {
+    rowsToShow = activeTab === 'ALL' ? allRows : allRows.filter(r => r.round === activeTab);
+    showBadge = activeTab === 'ALL';
+  }
+
+  if(rowsToShow.length === 0){
+    contentEl.innerHTML = `<div class="empty">${mode === 'search' ? '검색 결과가 없습니다.' : '표시할 과목이 없습니다.'}</div>`;
+    return;
+  }
+
   contentEl.innerHTML = `<div class="grid">` + rowsToShow.map((r, i) => {
     const c = roundColor[r.round] || PALETTE[0];
     return `
@@ -572,10 +702,49 @@ function render(){
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>
         </span>
       </div>
-      <span class="card-title">${escapeHtml(r.subject)}</span>
+      <div class="card-body">
+        <span class="card-title">${escapeHtml(r.subject)}</span>
+        ${(r.session || r.period) ? `<div class="card-meta">
+          ${r.session ? `<span class="meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>${escapeHtml(r.session)}</span>` : ''}
+          ${r.period ? `<span class="meta-item"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>${escapeHtml(r.period)}</span>` : ''}
+        </div>` : ''}
+      </div>
     </a>
   `;
   }).join('') + `</div>`;
+}
+
+function renderRoundsLanding(){
+  if(rounds.length === 0){
+    contentEl.innerHTML = `<div class="empty">표시할 차수가 없습니다.</div>`;
+    return;
+  }
+  contentEl.innerHTML = `<div class="round-grid">` + rounds.map((r, i) => {
+    const c = roundColor[r];
+    const count = allRows.filter(x => x.round === r).length;
+    return `
+    <button class="round-card" style="--accent:${c.solid};--accent-tint:${c.tint};animation-delay:${Math.min(i * 40, 240)}ms" data-round="${escapeAttr(r)}">
+      <div class="round-card-top">
+        <span class="round-eyebrow">차수</span>
+        <span class="go-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>
+        </span>
+      </div>
+      <div>
+        <div class="round-name">${escapeHtml(r)}</div>
+        <div class="round-count">${count}개 과목</div>
+      </div>
+    </button>
+  `;
+  }).join('') + `</div>`;
+
+  contentEl.querySelectorAll('.round-card').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeTab = btn.getAttribute('data-round');
+      currentView = 'detail';
+      render();
+    });
+  });
 }
 
 function escapeHtml(str){
