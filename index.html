@@ -95,6 +95,16 @@ body{
   display:inline-block;
 }
 
+.title-logo{
+  display:block;
+  max-height:56px;
+  width:auto;
+  margin-bottom:16px;
+  cursor:pointer;
+  transition:opacity .15s ease, transform .15s ease;
+}
+.title-logo:hover{ opacity:0.85; transform:translateY(-1px); }
+
 h1{
   font-size:clamp(30px,4.6vw,44px);
   font-weight:800;
@@ -478,6 +488,7 @@ footer a{ color:#2F5FE0; text-decoration:none; }
       <p class="eyebrow">Course Materials</p>
       <div class="dot-legend" id="dotLegend"></div>
     </div>
+    <img src="title.png" alt="로고 - 처음으로" class="title-logo" id="titleLogo" onerror="this.style.display='none'">
     <h1>차수/과목별 선발자 명단</h1>
     <p class="sub">차수별 과목 링크를 한 곳에서 확인하세요. 스프레드시트가 업데이트되면 이 페이지에도 자동으로 반영됩니다.</p>
 
@@ -535,6 +546,7 @@ let currentView = 'rounds'; // 'rounds' (첫 화면 - 차수 목록) | 'detail' 
 const contentEl = document.getElementById('content');
 const tabsEl = document.getElementById('tabs');
 const backBtn = document.getElementById('backBtn');
+const titleLogo = document.getElementById('titleLogo');
 const statusEl = document.getElementById('statusLine');
 const dotLegendEl = document.getElementById('dotLegend');
 const searchInput = document.getElementById('searchInput');
@@ -544,6 +556,14 @@ backBtn.addEventListener('click', () => {
   currentView = 'rounds';
   searchInput.value = '';
   render();
+});
+
+titleLogo.addEventListener('click', () => {
+  currentView = 'rounds';
+  activeTab = 'ALL';
+  searchInput.value = '';
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
 function naturalKeyForRound(r){
@@ -583,7 +603,7 @@ function fetchSheet(){
       reject(new Error('스크립트 로드에 실패했습니다. 시트 ID 또는 네트워크 연결을 확인해주세요.'));
     };
 
-    script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${callbackName}&t=${Date.now()}`;
+    script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?headers=1&tqx=out:json;responseHandler:${callbackName}&t=${Date.now()}`;
     document.body.appendChild(script);
   });
 }
@@ -618,6 +638,7 @@ function parseTable(table){
     const period = cellStr(periodIdx);
     let link = cellStr(linkIdx);
     if(!round || !subject || !link) return;
+    if(round === '차수' && subject === '과목') return; // 헤더 행이 데이터로 잘못 들어온 경우 방지
     if(!/^https?:\/\//i.test(link)) link = 'https://' + link;
     rows.push({ round, subject, session, period, link });
   });
