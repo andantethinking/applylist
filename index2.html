@@ -1455,7 +1455,8 @@ function closeSheetPanel(){
 }
 
 sheetPanelCloseBtn.addEventListener('click', closeSheetPanel);
-sheetPanelOverlay.addEventListener('click', (e) => { if(e.target === sheetPanelOverlay) closeSheetPanel(); });
+// 편집 중 실수로 바깥 영역을 눌러 내용이 사라지는 걸 막기 위해,
+// 바깥(배경) 클릭으로는 패널이 닫히지 않도록 한다. 닫으려면 X 버튼 또는 Esc를 사용해야 한다.
 sheetPanelLoginBtn.addEventListener('click', () => {
   sheetPanelLoginBtn.disabled = true;
   sheetPanelLoginBtn.textContent = '로그인 중...';
