@@ -79,6 +79,43 @@ a:focus-visible, button:focus-visible, input:focus-visible{
   margin:0 auto;
 }
 
+.hero-login-btn{
+  position:absolute;
+  top:0;
+  right:24px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:9px 14px;
+  border:1.5px solid var(--hero-line);
+  border-radius:999px;
+  background:rgba(255,255,255,0.07);
+  color:var(--white-soft);
+  font-family:inherit;
+  font-size:12.5px;
+  font-weight:700;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:border-color .15s ease, color .15s ease, background .15s ease;
+  z-index:5;
+}
+.hero-login-btn:hover{ border-color:#8EF0D3; color:#fff; background:rgba(255,255,255,0.12); }
+.hero-login-btn svg{ width:14px; height:14px; stroke:currentColor; flex-shrink:0; }
+.hero-login-btn.is-on{
+  border-color:#8EF0D3;
+  background:rgba(142,240,211,0.14);
+  color:#fff;
+}
+.hero-login-btn.is-on .hero-login-dot{
+  display:inline-block;
+  width:6px; height:6px; border-radius:50%;
+  background:#8EF0D3;
+}
+
+@media (max-width:520px){
+  .hero-login-btn{ position:static; margin-bottom:16px; }
+}
+
 /* ---------- STICKY CONTROL BAR (search + tabs) ---------- */
 .control-bar{
   position:sticky;
@@ -729,6 +766,10 @@ footer a{ color:#2F5FE0; text-decoration:none; }
 
 <div class="hero">
   <div class="hero-inner">
+    <button class="hero-login-btn" id="heroLoginBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      로그인
+    </button>
     <div class="dot-legend" id="dotLegend"></div>
     <h1 id="titleHeading">
       <span class="title-year">2026</span>
@@ -841,6 +882,7 @@ const searchInput = document.getElementById('searchInput');
 const searchClear = document.getElementById('searchClear');
 const searchHint = document.getElementById('searchHint');
 const refreshBtn = document.getElementById('refreshBtn');
+const heroLoginBtn = document.getElementById('heroLoginBtn');
 
 backBtn.addEventListener('click', () => {
   currentView = 'rounds';
@@ -1117,6 +1159,8 @@ refreshBtn.addEventListener('click', () => load(true));
 
 /* ================= Google 로그인 (선발자 명단 편집용) ================= */
 
+const AUTH_FLAG_KEY = 'sheetEditorAuthed';
+
 function ensureTokenClient(){
   if(tokenClient) return tokenClient;
   if(!window.google || !google.accounts || !google.accounts.oauth2){
@@ -1129,6 +1173,8 @@ function ensureTokenClient(){
       if(tokenResponse && tokenResponse.access_token){
         accessToken = tokenResponse.access_token;
         isAdmin = true;
+        try{ localStorage.setItem(AUTH_FLAG_KEY, '1'); }catch(e){ /* 저장 불가 시 무시 */ }
+        updateHeroLoginUI();
         // 현재 열려있는 패널이 있으면 바로 편집 모드로 전환
         if(sheetPanelOverlay.classList.contains('visible') && currentPanelRow){
           loadPanelEditable();
@@ -1138,6 +1184,58 @@ function ensureTokenClient(){
   });
   return tokenClient;
 }
+
+function updateHeroLoginUI(){
+  heroLoginBtn.classList.toggle('is-on', isAdmin);
+  heroLoginBtn.innerHTML = isAdmin
+    ? `<span class="hero-login-dot"></span>로그인됨 · 로그아웃`
+    : `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>로그인`;
+}
+
+heroLoginBtn.addEventListener('click', () => {
+  if(isAdmin){
+    if(accessToken && window.google && google.accounts && google.accounts.oauth2){
+      google.accounts.oauth2.revoke(accessToken, () => {});
+    }
+    accessToken = null;
+    isAdmin = false;
+    try{ localStorage.removeItem(AUTH_FLAG_KEY); }catch(e){ /* 무시 */ }
+    updateHeroLoginUI();
+    return;
+  }
+  try{
+    ensureTokenClient().requestAccessToken({ prompt: '' });
+  }catch(err){
+    alert(err.message || String(err));
+  }
+});
+
+// 이전에 로그인했던 기록이 있으면, 페이지를 열 때 클릭 없이 조용히 재인증을 시도한다.
+// (같은 브라우저에 구글 로그인 세션이 남아있는 경우에만 팝업 없이 성공한다.)
+function attemptSilentReauth(){
+  let hadAuth = false;
+  try{ hadAuth = localStorage.getItem(AUTH_FLAG_KEY) === '1'; }catch(e){ /* 무시 */ }
+  if(!hadAuth) return;
+  const tryInit = () => {
+    if(!window.google || !google.accounts || !google.accounts.oauth2){
+      setTimeout(tryInit, 300);
+      return;
+    }
+    try{
+      ensureTokenClient().requestAccessToken({ prompt: '' });
+    }catch(e){ /* 조용히 실패 — 사용자가 직접 로그인 버튼을 누르면 됨 */ }
+  };
+  tryInit();
+}
+
+// 토큰 만료 전에 백그라운드에서 주기적으로 조용히 갱신
+setInterval(() => {
+  if(isAdmin){
+    try{ ensureTokenClient().requestAccessToken({ prompt: '' }); }catch(e){ /* 무시 */ }
+  }
+}, 50 * 60 * 1000);
+
+attemptSilentReauth();
 
 /* ================= Google Sheets API 헬퍼 (임의의 시트 대상) ================= */
 
