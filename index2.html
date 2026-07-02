@@ -723,7 +723,7 @@ table.sheet-table td{
   vertical-align:middle;
   text-align:center;
 }
-table.sheet-table tr:first-child td{
+table.sheet-table tr.header-row td{
   background:#153D64;
   color:#fff;
   font-weight:800;
@@ -732,11 +732,11 @@ table.sheet-table tr:first-child td{
   top:0;
   z-index:2;
 }
-table.sheet-table tr:first-child td input{
+table.sheet-table tr.header-row td input{
   color:#fff;
   font-weight:800;
 }
-table.sheet-table tr:first-child td input::placeholder{ color:rgba(255,255,255,0.6); }
+table.sheet-table tr.header-row td input::placeholder{ color:rgba(255,255,255,0.6); }
 table.sheet-table td input{
   width:100%;
   min-width:0;
@@ -755,7 +755,7 @@ table.sheet-table td input:focus{
   position:relative;
   z-index:1;
 }
-table.sheet-table tr:first-child td input:focus{
+table.sheet-table tr.header-row td input:focus{
   background:#153D64;
   color:#fff;
 }
@@ -824,7 +824,7 @@ table.sheet-table td.readonly-cell{
   color:var(--ink);
   white-space:nowrap;
 }
-table.sheet-table tr:first-child td.readonly-cell{ font-weight:800; }
+table.sheet-table tr.header-row td.readonly-cell{ font-weight:800; }
 
 footer{
   margin-top:44px;
@@ -1611,7 +1611,8 @@ function buildCellHtml(val, r, c, statusColIdx){
 }
 
 function buildRowHtml(row, r, statusColIdx){
-  return `<tr>${row.map((val, c) => buildCellHtml(val, r, c, statusColIdx)).join('')}</tr>`;
+  const rowClass = r === 0 ? ' class="header-row"' : '';
+  return `<tr${rowClass}>${row.map((val, c) => buildCellHtml(val, r, c, statusColIdx)).join('')}</tr>`;
 }
 
 function attachRowListeners(container){
@@ -1649,10 +1650,10 @@ function maybeAppendBlankRow(editedRowIndex){
   currentGrid.push(newRow);
   const newIndex = currentGrid.length - 1;
 
-  const table = sheetPanelBody.querySelector('table.sheet-table');
-  if(!table) return;
-  table.insertAdjacentHTML('beforeend', buildRowHtml(newRow, newIndex, currentStatusColIdx));
-  if(table.lastElementChild) attachRowListeners(table.lastElementChild);
+  const tbody = sheetPanelBody.querySelector('table.sheet-table tbody');
+  if(!tbody) return;
+  tbody.insertAdjacentHTML('beforeend', buildRowHtml(newRow, newIndex, currentStatusColIdx));
+  if(tbody.lastElementChild) attachRowListeners(tbody.lastElementChild);
 }
 
 function renderPanelTable(){
@@ -1667,7 +1668,7 @@ function renderPanelTable(){
   const rowsHtml = currentGrid.map((row, r) => buildRowHtml(row, r, statusColIdx)).join('');
   const colWidths = computeColWidths(currentGrid);
   const colgroupHtml = '<colgroup>' + colWidths.map(w => `<col style="width:${w}px">`).join('') + '</colgroup>';
-  sheetPanelBody.innerHTML = `<table class="sheet-table">${colgroupHtml}${rowsHtml}</table>`;
+  sheetPanelBody.innerHTML = `<table class="sheet-table">${colgroupHtml}<tbody>${rowsHtml}</tbody></table>`;
 
   if(panelEditable){
     attachRowListeners(sheetPanelBody);
