@@ -706,6 +706,39 @@ h1{
 }
 .sheet-panel-login-btn:disabled{ opacity:0.6; cursor:default; }
 
+.sheet-panel-search{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:12px 22px;
+  border-bottom:1px solid var(--line);
+  flex-shrink:0;
+}
+.sheet-panel-search svg{ width:15px; height:15px; stroke:var(--ink-soft); flex-shrink:0; }
+.sheet-panel-search input{
+  flex:1;
+  border:1.5px solid var(--line);
+  border-radius:9px;
+  padding:8px 12px;
+  font-size:14px;
+  font-family:inherit;
+  color:var(--ink);
+  background:var(--paper);
+  transition:border-color .15s ease, background .15s ease;
+}
+.sheet-panel-search input:focus{
+  outline:none;
+  border-color:#2F5FE0;
+  background:#fff;
+}
+.sheet-panel-search-count{
+  font-size:12.5px;
+  font-weight:700;
+  color:var(--ink-soft);
+  white-space:nowrap;
+  flex-shrink:0;
+}
+
 .sheet-panel-body{
   flex:1;
   overflow:auto;
@@ -922,6 +955,11 @@ footer a{ color:#2F5FE0; text-decoration:none; }
     <div class="sheet-panel-login-banner" id="sheetPanelLoginBanner">
       <span>Google 계정으로 로그인하면 이 표를 페이지 안에서 바로 수정할 수 있어요. (편집 권한이 있는 계정이어야 합니다)</span>
       <button class="sheet-panel-login-btn" id="sheetPanelLoginBtn" type="button">Google 로그인</button>
+    </div>
+    <div class="sheet-panel-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="sheetPanelSearchInput" placeholder="이름, 소속 등으로 검색">
+      <span class="sheet-panel-search-count" id="sheetPanelSearchCount"></span>
     </div>
     <div class="sheet-panel-body" id="sheetPanelBody">
       <div class="loading"><div class="spinner"></div>불러오는 중...</div>
@@ -1374,6 +1412,10 @@ const sheetPanelOpenLink = document.getElementById('sheetPanelOpenLink');
 const sheetPanelCloseBtn = document.getElementById('sheetPanelCloseBtn');
 const sheetPanelLoginBanner = document.getElementById('sheetPanelLoginBanner');
 const sheetPanelLoginBtn = document.getElementById('sheetPanelLoginBtn');
+const sheetPanelSearchInput = document.getElementById('sheetPanelSearchInput');
+const sheetPanelSearchCount = document.getElementById('sheetPanelSearchCount');
+
+let panelSearchQuery = '';
 
 let currentPanelRow = null;
 let currentPanelSheetId = null;
@@ -1424,6 +1466,9 @@ async function openSheetPanel(row){
   panelDirty = false;
   panelEditable = false;
   panelStartRow = 1;
+  panelSearchQuery = '';
+  sheetPanelSearchInput.value = '';
+  sheetPanelSearchCount.textContent = '';
 
   sheetPanelEyebrow.textContent = row.round;
   sheetPanelTitle.textContent = row.subject;
@@ -1665,7 +1710,35 @@ function renderPanelTable(){
   const statusColIdx = headerRow.findIndex(h => normalizeHeaderText(h) === '상태');
   currentStatusColIdx = statusColIdx;
 
-  const rowsHtml = currentGrid.map((row, r) => buildRowHtml(row, r, statusColIdx)).join('');
+  const query = panelSearchQuery.trim().toLowerCase();
+  const lastIdx = currentGrid.length - 1;
+  let visibleIndices;
+  if(!query){
+    visibleIndices = currentGrid.map((_, r) => r);
+  } else {
+    visibleIndices = [];
+    currentGrid.forEach((row, r) => {
+      if(r === 0){ visibleIndices.push(r); return; } // 헤더는 항상 표시
+      const matches = row.some(v => (v || '').toString().toLowerCase().includes(query));
+      if(matches) visibleIndices.push(r);
+    });
+    // 새로 입력할 수 있는 마지막 빈 행은 검색 중에도 항상 보이게 유지
+    if(panelEditable && lastIdx > 0 && !visibleIndices.includes(lastIdx)){
+      visibleIndices.push(lastIdx);
+    }
+  }
+
+  if(sheetPanelSearchCount){
+    const dataRowCount = Math.max(visibleIndices.length - 1, 0);
+    sheetPanelSearchCount.textContent = query ? `${dataRowCount}건 검색됨` : '';
+  }
+
+  if(visibleIndices.length <= 1){
+    sheetPanelBody.innerHTML = `<div class="empty">검색 결과가 없습니다.</div>`;
+    return;
+  }
+
+  const rowsHtml = visibleIndices.map(r => buildRowHtml(currentGrid[r], r, statusColIdx)).join('');
   const colWidths = computeColWidths(currentGrid);
   const colgroupHtml = '<colgroup>' + colWidths.map(w => `<col style="width:${w}px">`).join('') + '</colgroup>';
   sheetPanelBody.innerHTML = `<table class="sheet-table">${colgroupHtml}<tbody>${rowsHtml}</tbody></table>`;
@@ -1674,6 +1747,11 @@ function renderPanelTable(){
     attachRowListeners(sheetPanelBody);
   }
 }
+
+sheetPanelSearchInput.addEventListener('input', () => {
+  panelSearchQuery = sheetPanelSearchInput.value;
+  renderPanelTable();
+});
 
 function markPanelDirty(){
   panelDirty = true;
