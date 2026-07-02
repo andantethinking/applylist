@@ -739,6 +739,36 @@ table.sheet-table td input:focus{
   position:relative;
   z-index:1;
 }
+table.sheet-table td select{
+  width:100%;
+  min-width:90px;
+  border:none;
+  background:transparent;
+  padding:8px 10px;
+  font-size:13px;
+  font-family:inherit;
+  font-weight:700;
+  color:var(--ink);
+  cursor:pointer;
+  appearance:none;
+  -webkit-appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7590' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat:no-repeat;
+  background-position:right 8px center;
+  background-size:12px;
+  padding-right:26px;
+}
+table.sheet-table td select:focus{
+  outline:2px solid #8EF0D3;
+  outline-offset:-2px;
+  background-color:#fff;
+  position:relative;
+  z-index:1;
+}
+table.sheet-table tr.row-selected td{ background:#EAF7F0; }
+table.sheet-table tr.row-cancelled td{ background:#FDEEEC; }
+table.sheet-table tr.row-selected td select{ color:#0F7A54; }
+table.sheet-table tr.row-cancelled td select{ color:#B84631; }
 table.sheet-table td.readonly-cell{
   padding:8px 10px;
   font-size:13px;
@@ -1458,14 +1488,38 @@ function renderPanelTable(){
     sheetPanelBody.innerHTML = `<div class="empty">표시할 데이터가 없습니다.</div>`;
     return;
   }
+  const headerRow = currentGrid[0] || [];
+  const statusColIdx = headerRow.findIndex(h => (h || '').toString().trim() === '상태');
+
+  const rowClassFor = (r) => {
+    if(r === 0 || statusColIdx === -1) return '';
+    const val = (currentGrid[r][statusColIdx] || '').toString().trim();
+    if(val === '선발') return 'row-selected';
+    if(val === '취소') return 'row-cancelled';
+    return '';
+  };
+
   const rowsHtml = currentGrid.map((row, r) => {
     const cellsHtml = row.map((val, c) => {
       if(panelEditable){
+        if(c === statusColIdx && r > 0){
+          const known = ['', '선발', '취소'];
+          const extra = known.includes(val) ? '' : `<option value="${escapeAttr(val)}" selected>${escapeHtml(val)}</option>`;
+          return `<td>
+            <select data-r="${r}" data-c="${c}" class="status-select">
+              ${extra}
+              <option value="" ${val === '' ? 'selected' : ''}>-</option>
+              <option value="선발" ${val === '선발' ? 'selected' : ''}>선발</option>
+              <option value="취소" ${val === '취소' ? 'selected' : ''}>취소</option>
+            </select>
+          </td>`;
+        }
         return `<td><input type="text" value="${escapeAttr(val)}" data-r="${r}" data-c="${c}"></td>`;
       }
       return `<td class="readonly-cell">${escapeHtml(val)}</td>`;
     }).join('');
-    return `<tr>${cellsHtml}</tr>`;
+    const rowClass = rowClassFor(r);
+    return `<tr${rowClass ? ` class="${rowClass}"` : ''}>${cellsHtml}</tr>`;
   }).join('');
   sheetPanelBody.innerHTML = `<table class="sheet-table">${rowsHtml}</table>`;
 
@@ -1476,6 +1530,16 @@ function renderPanelTable(){
         const c = Number(input.getAttribute('data-c'));
         currentGrid[r][c] = input.value;
         markPanelDirty();
+      });
+    });
+    sheetPanelBody.querySelectorAll('select.status-select').forEach(select => {
+      select.addEventListener('change', () => {
+        const r = Number(select.getAttribute('data-r'));
+        const c = Number(select.getAttribute('data-c'));
+        currentGrid[r][c] = select.value;
+        markPanelDirty();
+        const tr = select.closest('tr');
+        if(tr) tr.className = rowClassFor(r);
       });
     });
   }
