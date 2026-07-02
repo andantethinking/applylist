@@ -712,7 +712,8 @@ table.sheet-table{
 table.sheet-table td{
   border:1px solid var(--line);
   padding:0;
-  vertical-align:top;
+  vertical-align:middle;
+  text-align:center;
 }
 table.sheet-table tr:first-child td{
   background:#153D64;
@@ -737,6 +738,7 @@ table.sheet-table td input{
   font-size:14px;
   font-family:inherit;
   color:var(--ink);
+  text-align:center;
 }
 table.sheet-table td input:focus{
   outline:2px solid #8EF0D3;
@@ -754,6 +756,8 @@ table.sheet-table td select{
   min-width:90px;
   border:none;
   background:transparent;
+  text-align:center;
+  text-align-last:center;
   padding:7px 10px;
   font-size:14px;
   font-family:inherit;
@@ -786,12 +790,12 @@ table.sheet-table td select:focus{
 .status-badge.badge-selected{ background:#DFF5E9; color:#0F7A54; }
 .status-badge.badge-cancelled{ background:#FCE4E0; color:#B84631; }
 
-table.sheet-table td.status-cell{ text-align:left; }
+table.sheet-table td.status-cell{ text-align:center; }
 table.sheet-table td select.status-select{
   width:auto;
   min-width:0;
   display:inline-block;
-  margin:6px 0 6px 8px;
+  margin:6px 0;
   padding:4px 26px 4px 12px;
   border-radius:999px;
   font-size:13.5px;
