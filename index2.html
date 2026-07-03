@@ -902,7 +902,7 @@ footer a{ color:#2F5FE0; text-decoration:none; }
     <div class="toolbar">
       <div class="search-box">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="searchInput" placeholder="과목명으로 검색">
+        <input type="text" id="searchInput" placeholder="과목명, 이름, 소속 등으로 검색">
         <span class="search-hint" id="searchHint">/</span>
         <button class="search-clear" id="searchClear" type="button" aria-label="검색어 지우기">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -924,6 +924,7 @@ footer a{ color:#2F5FE0; text-decoration:none; }
 
 <div class="wrap">
   <div class="status-line" id="statusLine"></div>
+  <div class="status-line" id="searchReadyNote" style="display:none;"></div>
 
   <div id="content">
     <div class="loading"><div class="spinner"></div>불러오는 중...</div>
@@ -1164,7 +1165,11 @@ function render(){
   let rowsToShow;
   let showBadge;
   if(mode === 'search'){
-    rowsToShow = allRows.filter(r => r.subject.toLowerCase().includes(query));
+    rowsToShow = allRows.filter(r => {
+      if(r.subject.toLowerCase().includes(query)) return true;
+      const cached = searchCache.get(r.link);
+      return cached ? cached.includes(query) : false;
+    });
     showBadge = true;
   } else {
     rowsToShow = activeTab === 'ALL' ? allRows : allRows.filter(r => r.round === activeTab);
@@ -1257,6 +1262,7 @@ async function load(isManual){
     const timeStr = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
     setStatus(true, `마지막 업데이트: ${timeStr} · 총 ${allRows.length}개 과목`);
     render();
+    prefetchAllLinkedSheets(); // 이름/소속 검색을 위해 백그라운드에서 각 시트 내용을 미리 불러온다
   }catch(err){
     console.error('시트 로드 실패:', err);
     setStatus(false, '데이터를 불러오지 못했습니다.');
@@ -1269,6 +1275,62 @@ async function load(isManual){
   }finally{
     if(isManual) setTimeout(() => refreshBtn.classList.remove('spinning'), 400);
   }
+}
+
+/* ================= 이름/소속 검색을 위한 백그라운드 시트 프리페치 ================= */
+
+const searchCache = new Map(); // link -> 그 시트 데이터를 소문자로 이어붙인 검색용 텍스트
+
+async function buildSearchTextForLink(link){
+  if(searchCache.has(link)) return searchCache.get(link);
+  const parsed = parseSheetUrl(link);
+  if(!parsed.id){ searchCache.set(link, ''); return ''; }
+  try{
+    const table = await fetchArbitrarySheet(parsed.id, parsed.gid);
+    const cols = table.cols || [];
+    const header = cols.map(c => (c.label || '').toString());
+    const grid = [header];
+    (table.rows || []).forEach(row => {
+      const cells = row.c || [];
+      grid.push(cells.map(cell => (cell && cell.f != null) ? String(cell.f) : (cell && cell.v != null ? String(cell.v) : '')));
+    });
+    const trimmed = trimToHeaderRow(grid);
+    const dataRows = trimmed.grid.slice(1); // 헤더 제외한 실제 데이터 행만
+    const text = dataRows.map(r => r.join(' ')).join(' ').toLowerCase();
+    searchCache.set(link, text);
+    return text;
+  }catch(err){
+    searchCache.set(link, ''); // 접근 불가한 시트는 조용히 건너뜀 (과목명 검색은 그대로 동작)
+    return '';
+  }
+}
+
+async function prefetchAllLinkedSheets(){
+  const uniqueLinks = [...new Set(allRows.map(r => r.link))];
+  const pending = uniqueLinks.filter(link => !searchCache.has(link));
+  if(pending.length === 0) return;
+
+  const noteEl = document.getElementById('searchReadyNote');
+  let done = 0;
+  const updateNote = () => {
+    if(!noteEl) return;
+    noteEl.style.display = 'flex';
+    if(done < pending.length){
+      noteEl.innerHTML = `<span class="status-dot"></span>이름/소속 검색 데이터 불러오는 중... (${done}/${pending.length})`;
+    } else {
+      noteEl.innerHTML = `<span class="status-dot"></span>이름/소속 검색 준비 완료`;
+      setTimeout(() => { noteEl.style.display = 'none'; }, 3000);
+    }
+  };
+  updateNote();
+
+  await Promise.all(pending.map(async (link) => {
+    await buildSearchTextForLink(link);
+    done++;
+    updateNote();
+    // 검색 중인 화면이면 결과를 점진적으로 갱신
+    if(searchInput.value.trim()) render();
+  }));
 }
 
 searchInput.addEventListener('input', render);
