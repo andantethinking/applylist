@@ -1339,7 +1339,10 @@ searchClear.addEventListener('click', () => {
   searchInput.focus();
   render();
 });
-refreshBtn.addEventListener('click', () => load(true));
+refreshBtn.addEventListener('click', () => {
+  searchCache.clear(); // 이름/소속 검색 캐시까지 전부 지우고 다시 불러온다
+  load(true);
+});
 
 /* ================= Google 로그인 (선발자 명단 편집용) ================= */
 
