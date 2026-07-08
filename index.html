@@ -9,8 +9,9 @@
 <style>
 @font-face {
   font-family: 'Pretendard';
-  src: url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/woff2/PretendardVariable.woff2') format('woff2-variations');
+  src: url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/woff2/PretendardVariable.woff2') format('woff2');
   font-weight: 45 920;
+  font-display: swap;
 }
 
 :root{
@@ -36,6 +37,7 @@
 
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
+button, input, select, textarea, optgroup{ font-family: inherit; }
 html{ scroll-behavior:smooth; }
 body{
   font-family:'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
@@ -308,7 +310,7 @@ h1{
   color:var(--white-soft);
   font-family:inherit;
   font-size:15.5px;
-  font-weight:600;
+  font-weight:700;
   cursor:pointer;
   transition:border-color .15s ease, color .15s ease, background .15s ease;
   white-space:nowrap;
